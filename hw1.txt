@@ -1,0 +1,159 @@
+#Matthew Kownacki
+#Experimental Math, Spring 2015
+#Homework 1
+
+#This work may be posted online.
+
+#For PROBLEM 1, here is a list of exercises I did that I particularly liked
+
+#b:=1-q^7 - q^8 - q^9 + q^15 + q^16 + q^17 - q^24;
+#factor(b);
+# this returns -(q+1)*(q^2+1)*(q^2+q+1)*(q^6+q^3+1)*(q^4+1)*(q^6+q^5+q^4+q^3+q^2+q+1)*(q-1)^3
+
+#sqrt(x+2)*sqrt(x+3);
+#expand(%);
+#returns the same as was input
+#combine(%,symbolic):
+#normal(%,expanded);
+# the last line returns sqrt(6.+x^2+5.*x)
+
+#a:=(x-y-z)*(z+y+x);
+#b:=(x^2 -2*x*y - 2*x*z+y^2 +2*y*z+z^2)*(x^2-x*y+x*z-y*z);
+#c:=a/b: normal(c);
+# returns (z+y+x)/((x^2-x*y+x*z-y*z)*(x-y-z))
+
+#a:=23: b:=5:
+#q:=iquo(a,b): r:=irem(a,b):
+#b*q + r;
+# returns 23
+# Woohoo division algorithm!
+
+#A:={a,b,c,d,e,f,g};
+#B:={a,c,e,g};
+#C:= A union B;
+#Dee:= A intersect B;
+#eqn1:= nops(C) = nops(A) + nops(B) -nops(Dee);
+#Which returns 7=7 , we will see a generalized version in the next problem.
+
+
+#PROBLEM 2
+
+#Input any two sets, outputs true or false after checking inclusion,exclusion. 
+
+CheckPie2:=proc(Set1,Set2) local A,B,C,Dee,x,y:
+A:= Set1: B:= Set2:
+C:= A union B:
+Dee:= A intersect B:
+x:=nops(C); y:= nops(A) + nops(B) - nops(Dee);
+if x=y then
+
+RETURN(TRUE):
+else 
+RETURN(FALSE):
+ fi:
+end:
+
+
+#PROBLEM 3
+
+#Inputs any integer N that is the max number of games, outputs number of coin tosses required to win (i.e. outputs i).
+#DoNs(N): "Winning a dollar with prob. 1-1/2^N"
+DoNs:=proc(N) local coin, c, ST, debt,i:
+ST:=1:
+debt:=0:
+coin:=rand(0..1):
+
+
+for i from 1 to N do
+c:=coin():
+if c=1 then
+ RETURN(i):
+else
+ debt:=debt+ST:
+ ST:=2*ST:
+fi:
+N:
+od:
+end:
+
+#PROBLEM 4
+
+AveDuration:= proc(N,K) local avg,sum,i:
+sum:=0:
+for i from 1 to K do
+sum:=sum + DoNs(N):
+od:
+avg:=sum/K :
+RETURN(avg):
+end:
+
+#PROBLEM 5
+# You could think of each DoNs(N) as a Geometric random variable with parameter p=1/2. It will return i, which
+# is equivalent to the "time" spent to reach one success.
+# What AveDuration does is sum K of these up and divides by K to get the average. This means that
+# AveDuration(N,K) = 1/K * sum from i=1 to K of X, where X is geometric with parameter p=1/2. 
+# i.e., AveDuration is the sample mean. As K approaches infinity, then the sample mean should converge to the theoretical
+# mean by the Law of Large Numbers, so then AveDuration(infinity,infinity) is just the theoretical mean of a geometric
+# random variable with paremeter p. Thus, AveDuration(infinity, infinity) = 1/p in the general case, and 2 in the case that
+# p=1/2, like it is above. 
+
+#Lets test it with some computations, and p=1/2:
+
+InfAveTest:= proc() local N,K,S:
+
+
+for K from 10^5 by 10^5 to 10^6 do
+S:= S,AveDuration(K,K):
+
+od:
+return(S):
+end:
+
+#Running this took a while, but after simplifying the output, it returns:
+# {1.996833750, 1.996842000, 1.998848000, 1.998865714, 1.998886667, 1.999815000,
+# 2.000200000, 2.000840000, 2.002457500, 2.007120000}
+# Which supports the above conclusion. 
+
+#PROBLEM 7
+# While I was not assigned this problem, I figured it would be fun to do anyway.
+
+#Inputs any integer N that is the max number of games and the probability p of successfully winning a game
+# outputs number of coin tosses that were required to win (i.e. outputs i).
+
+DoNg:=proc(N,p) local coin, c, ST, debt,i,prob,X,A:
+with(Statistics):
+prob:=p:
+ST:=1:
+debt:=0:
+X:=RandomVariable(Uniform(0,1)):
+
+
+for i from 1 to N do
+A:=Sample(X,1):
+c:= A(1):
+
+if c<prob then
+ RETURN(i):
+else
+ debt:=debt+ST:
+ ST:=2*ST:
+fi:
+N:
+od:
+end:
+
+#Checking Problem 5 with a modified form of AveDurration()
+AvgDur:=proc(N,K,p) local sum,i:
+
+sum:=0:
+for i from 1 to K do
+sum:=sum + DoNg(N,p):
+od:
+sum:=evalf(sum/K ):
+
+return(sum):
+end:
+
+#AvgDur(1000,1000,1/3); returns 3.01100000
+#AvgDur(1000,1000,1/4); returns 3.99000000
+#So this further supports our conclusion in Problem 5. 
