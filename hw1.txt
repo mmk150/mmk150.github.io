@@ -57,7 +57,7 @@ end:
 #PROBLEM 3
 
 #Inputs any integer N that is the max number of games, outputs number of coin tosses required to win (i.e. outputs i).
-#DoNs(N): "Winning a dollar with prob. 1-1/2^N"
+
 DoNs:=proc(N) local coin, c, ST, debt,i:
 ST:=1:
 debt:=0:
@@ -112,7 +112,7 @@ end:
 #Running this took a while, but after simplifying the output, it returns:
 # {1.996833750, 1.996842000, 1.998848000, 1.998865714, 1.998886667, 1.999815000,
 # 2.000200000, 2.000840000, 2.002457500, 2.007120000}
-# Which supports the above conclusion. 
+# Which is in agreement with the above conclusion. 
 
 #PROBLEM 7
 # While I was not assigned this problem, I figured it would be fun to do anyway.
