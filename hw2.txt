@@ -1,0 +1,280 @@
+#Matthew Kownacki
+#January 26,2015 Assignment hw2.txt
+#OK to post
+
+#PROBLEM 1
+#Here are some of the problems I fooled around with:
+
+#sum(i^2, i = 1 .. n);
+#sum(i^4, i = 1 .. n);
+#sum(i^6, i = 1 .. n);
+#sum(1/i^2, i=1..n); 
+# All of these output the relevant derived formula for their sums, while the last one outputs it in terms of the psi-function(which is the polygamma function according to the site documentation)
+
+# maximize(sin(x)+cos(x))
+# outputs sqrt(2)
+# minimize(sin(x)+cos(x))
+# outputs -sqrt(2)
+#
+
+# sum(1/i, i = 1 .. 10000)-ln(10000);
+# outputs 0.577265664, which is the Euler-Mascheroni constant 'Gamma' to four decimal places of accuracy.
+
+#PROBLEM 2
+#MHg(p) generalizes the Monty Hall Problem to work with a rational number p being your probability of guessing the correct door. 
+
+MHg:=proc(p) local  UnpickedDoors, MontyDoors,MontyDoor,ND,prob,X,A,doorpick,c :
+with(Statistics):
+prob:=p:
+
+X:=RandomVariable(Uniform(0,1)):
+A:= Sample(X,1):
+c:=A(1):
+if c< prob then
+doorpick:=1:
+else
+doorpick:=2:
+fi:
+
+print(`You picked door`, door1 ): 
+
+UnpickedDoors:={1,2,3} minus {doorpick}:
+
+
+MontyDoors:=UnpickedDoors minus {1}:
+
+MontyDoor:=MontyDoors[rand(1..nops(MontyDoors))()]:
+
+print(`Monty shows you that door`, MontyDoor, `has a goat `):
+print(`and he kindly (or "kindly") offers you to switch your`):
+print(`choice, and you agree`):
+
+ND:={1,2,3} minus {doorpick, MontyDoor}:
+ND:=ND[1]:
+
+print(`You decided to change your guessed door to door`, ND):
+
+if ND=1 then
+print(`Congratulations! You won a Porche! `):
+else
+print(`Monty tricked you, have fun with the goat.`):
+fi:
+
+end:
+
+#PROBLEM 3
+
+#MHgs(p) generalizes the Monty Hall Problem to work with a rational number p being your probability of guessing the correct door. 
+#'s' is for silent, all the prints have been removed.
+MHgs:=proc(p) local  UnpickedDoors, MontyDoors,MontyDoor,ND,prob,X,A,doorpick,c :
+with(Statistics):
+prob:=p:
+
+X:=RandomVariable(Uniform(0,1)):
+A:= Sample(X,1):
+c:=A(1);
+if c < prob then
+doorpick:=1:
+else
+doorpick:=2:
+fi:
+
+
+
+UnpickedDoors:={1,2,3} minus {doorpick}:
+
+
+MontyDoors:=UnpickedDoors minus {1}:
+
+MontyDoor:=MontyDoors[rand(1..nops(MontyDoors))()]:
+
+
+
+ND:={1,2,3} minus {doorpick, MontyDoor}:
+ND:=ND[1]:
+
+
+
+if ND=1 then
+RETURN(1):
+else
+return(0):
+fi:
+
+end:
+
+
+
+
+
+
+#SD(p,FP, FN):Stupid Doctors, probability of being
+#really sick if the doctor said you were sick
+SD:=proc(p,FP,FN)
+
+(p*(1-FN))/(p*(1-FN)+(1-p)*FP):
+
+end:
+
+#SDsim(N) simulates a game where out of N people, one is actually sick and one is falsely diagnosed to be sick.
+#Outputs a pair of intergers [realsick,falsesick]
+
+SDsim:=proc(N) local fs,rs, Group,newGroup,i:
+i:='i';
+Group:= {seq(i,i=1..N)}:
+
+#choose who is really sick
+rs:= rand(1..N)():
+newGroup:=Group minus {rs}:
+newGroup:=newGroup[]:
+#choose who is falsely declared sick
+fs:=newGroup[rand(1..N-1)()]:
+print(rs,fs):
+return(rs,fs):
+
+end:
+
+#After running the above for a large amount of times with N=20, I became empirically convinced that you any person has roughly even chances of being real or falsely sick.
+
+
+
+#PROBLEM 5
+#This one looks to be pretty fun, actually. 
+
+# BDg(k,N,r) will give us the amount of "almost birthdays" with a seperation of r days, out of a sample of k people and assuming N days in a year
+
+BDg:=proc(k,N,r) local i,L,bday,AB,SubtractVal,Copy:
+L:=[]: 
+AB:=true:
+ SubtractVal:=0:
+for i from 1 to k do:
+
+  bday:= rand(1..N)():
+  L:=[op(L), bday]:
+od:
+
+
+L:=sort(L):
+Copy:=L:
+
+
+for i from 1 to k do:
+#repeated increased subtraction trick!
+L[i]:=L[i] - SubtractVal:
+SubtractVal:=SubtractVal+r:
+if i>=2 then
+if L[i-1]>=L[i] then 
+#print(Copy[i-1],Copy[i]):
+#print(L[i-1],L[i]):
+#print("There is an almost birthday!"):
+AB:=false:
+
+fi:
+
+fi:
+od:
+
+#print(AB):
+return(AB);
+end:
+
+
+#PROBLEM 6
+# I will be using and modifying a technique shown to us by Professor Beck in our Probability II class last week. 
+# Specifically, the "repeated subtraction" encoding method, which we did in his class for the case r=1.
+# I will try to generalize it here.
+
+# So if you do the birthday problem, its equivalent to picking k days from N distinct days, 
+# then multiplying by k! for the possible permutations of those days, then dividing by N^k
+# for all the possible days you could have been born. This gives the probability of any two people not having the same birthday. 
+
+# Since we want "almost birthdays" then we have to do a little trick. 
+# Instead of taking from our N distinct days, lets choose k out of N- k*r days, then multiply by k! and divide by N^k. 
+# If you were to imagine labelling all the possible birthdays on N balls, 
+# and put them in an urn, then making sure that you do not take those who are exactly r apart, is equivalent to just
+# taking all of those kr balls out that are the "bad balls". 
+#
+# We also must condition on where you put the first birthday, with probability (N-kr)/(N), because we have N-kr spots that are not in the bad intervals, apriori.  
+
+
+
+
+#To Test:
+ABtest:=proc(k,N,r,Maxnum) local count,sum,bools,i:
+count:=0:
+for i from 1 to Maxnum do;
+bools:=BDg(k,N,r);
+if bools=true then
+	count:=count+1:
+fi:
+od:
+return(evalf(count/Maxnum)):
+end:
+
+#My invented one
+ABsim:= proc(k,N,r) local prob:
+prob:= (k)! /N^(k)  * (N-k*r)! /((k)! * (N -k*r - k)!) /((N-k*r)/N);
+prob:=evalf(prob):
+return(prob):
+end:
+
+#Actual almost birthday formula taken from wikipedia
+ABsreal:= proc(k,N,r) local prob:
+prob:= (N  - k*r - 1)! / ( N^(k-1) * (N-(r+1)*k)!):
+return(evalf(prob)):
+end:
+
+# So the approach seems to work just fine, as long as you remember to condition on the first birthday.
+# Testing it with a few thousand trials,then around one hundred thousand, and the results all converge to the formulas above. 
+
+
+#PROBLEM 7
+
+#IsDerangement(pi), checks if the list pi is a derangement or not(i.e. whether or not any of its elements are in its ordered spot)
+IsDerangement:=proc(pi) local copylist,i,bools:
+bools:=true:
+copylist:=pi:
+copylist:=sort(copylist):
+for i from 1 to nops(pi) do:
+if copylist[i]=pi[i] then
+bools:=false:
+fi:
+od:
+return(bools):
+end:
+
+#HowLikelyIsDer(n,K) 
+#inputs positive integers n and K, and by using combinat[randperm](n) and your own IsDerangement(pi), K times, counts the ratio of those that turned out to be derangements to the total K, in floating-point. 
+
+HowLikelyIsDer:=proc(n,K) local count, permut,i:
+count:=0:
+for i from 1 to K do:
+permut:= combinat[randperm](n):
+
+if IsDerangement(permut) = true then
+ count:=count +1:
+fi:
+od:
+return(evalf(count/K)):
+end:
+
+#HowLikelyIsDer(100,2000) returns  0.3745000000
+
+
+#To find the probability whether a given list of n items is a derangement, then you do the following:
+# Obviously, there are n! possible ways to order the items without restrictions, so that will be our denominator.
+
+# Now, if we pick any element, we have (n-1) spots to place it in. The issue arises in that the next element picked
+# Would have (n-1) or (n-2) spots to place it in, depending on which element, and every spot would belong to one that would
+# "usually" have one number in it.
+
+# Luckily, there is a good recursive solution. If you definte f_n = (n-1) * [f_(n-1) + f_(n-2)] for n>=0, then this actually
+# gives us the desired combinations of making a derangement. 
+
+# You can see this if you play around with the patterns for a bit. It took me a while to figure out a way to express this recusively.
+
+# If you expand this out, you get n! ( sum from k is 0 to n) of (-1)^k /k!). 
+# Notice that after dividing by n factorial, we have the Maclaurin Series of e^x at x=-1. 
+# Thus taking the limit as n approaches infinity, we should converge to 1/e. 
+
+# If I remember correctly, this is essentially how we solved some variation of the hat problem in Probability I when I took it with Professor Goldstein a year ago.  

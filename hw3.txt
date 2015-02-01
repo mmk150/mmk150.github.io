@@ -1,0 +1,145 @@
+#Matthew Kownacki
+# January 29,2015 Assignment hw3.txt
+#OK to post
+
+#PROBLEM 1
+
+#In addition to the exercises in the Maple book, I felt like fooling around a bit on Maple with complex numbers.
+#Here is some of what I did on my own:
+
+# z:= 2 + I*3;
+# z*conjugate(z) returns 13 (which is 2^2 + 3^3). 
+
+# with(plots):
+#complexplot(cos(x) + I*sin(x),x=-Pi..Pi,-1..1)
+# Gives a nice unit circle. 
+
+#f:= x + I*sin(x) +(x*I);
+#complexplot(f,x=-5..5,labels=["Real","Imaginary"]);
+# Also produces a nice looking graph. 
+
+#PROBLEM 2
+
+# First we will copy the code from C3a.txt, done in class.
+
+#C3.txt, Jan. 29, 2015, Dr. Z.'s Experimental Mathematics
+
+
+Help:=proc(): print(` S(N,k) , MS(N,k,M) `): end:
+
+#S(N,k): a public opinion survey among the first N pos. 
+#integers, to determine the ratio of even integers
+#using a random sample of k of them
+S:=proc(N,k) local ra,i,tot,c:
+ra:=rand(1..N):
+
+tot:=0:
+
+for i from 1 to k do
+c:=ra():
+
+ if c mod 2=0 then
+   tot:=tot+1:
+  fi:
+od:
+
+return(evalf(tot/k)):
+end:
+
+
+
+
+# Inputs positive integer N, positive integer k(smaller than N), a larger integer M, and a smaller number epsilon
+# Outputs the number of times the probability was not in the interval [1/2 - eps, 1/2 + eps]
+
+
+MS:= proc(N,k,M,eps) local i,count,ma,mi,cu: 
+
+count:=0:
+
+for i from 1 to M do
+cu:=S(N,k):
+if 1/2 - eps <= cu  and cu <= 1/2 + eps then
+count:=count+1:
+fi:
+od:
+return(count):
+end:
+
+#MS(10000,100,1000, 3/100) returns 533
+#MS(10000,100,1000, 1/100) returns 230
+#MS(10000,500,1000, 1/100) returns 365
+
+#PROBLEM 3 
+
+#Modified Post(L,M) so that it checks for good inputs.
+
+#PostV(L,M): inputs a list of prob. (that add to one)
+#of length m, say, describing the step-1 scenarios
+#(going to city i has prob. L[i]).
+#There are n secondary  destinations
+#If you are already to city i your prob. if M[i][j]
+PostV:=proc(L,M) local i,j,k,l,tot,P,P1,checksum:
+
+if type(L,list)=false then
+	RETURN("L is not of type List!"):
+fi:
+
+if type(M,list) or type(M[1],list) = false then
+	RETURN("M is not of type List[List]!"):
+fi:
+checksum:=0:
+for k from 1 to nops(L) do:
+	checksum:=checksum + L[k]:
+od:
+if checksum != 1 then 
+	RETURN("L does not have correct probabilities"):
+fi:
+
+for l from 1 to nops(M) do:
+k:=1:
+checksum:=0:
+for k from 1 to nops(M[l]) do:
+	checksum:=checksum + M[l][k]:
+od:
+if checksum !=1 then 
+	RETURN("M does not have correct probabilities"):
+fi:
+od:
+
+
+#Prob. of getting to j via i (starting at NB):
+#Prob(NB->i)*Prob(i->j)
+
+P:=[]:
+
+for j from 1 to nops(M[1]) do
+
+
+ tot:=add(L[i]*M[i][j],i=1..nops(L)):
+
+
+P1:=[seq(L[i]*M[i][j]/tot,i=1..nops(L))]:
+
+P:=[op(P), P1]:
+od:
+P:
+end:
+
+
+#PROBLEM 4
+
+# It's a very popular tactic to try to figure out in what state an object was given where it is now. 
+# Off the top of my head, I think you would be able to use some variation of Post(L,M) for just about any Markovian processes, 
+# since where you are at any given point depends on where you were at the point before that in such a process.
+# So, as a short answer, I think just about anything you could do with Markov Chains( maybe only when they're time reversible?)
+# could be worked backwards with Post(L,M) as long as you knew the relevant probabilities. 
+# So problems involving the weather over a few days, random walk problems going through a certain "city", etc. 
+
+#PROBLEM 5 
+
+# Alan is a student at Rutgers University. He is deciding whether or not to go on vacation.
+# Alan will first go either on a cruise to Jaimaca with probability .7, or on a cruise to Italy with probability .3
+# If Alan is in Jaimaca, he will go to visit the LHC at Cern in Geneva, Switzerland with probability .4, else he will go to florida.
+# If Alan goes to Italy, he will then visit the LHC at Cern in Geneva, Switzerland with probability .9, else he will go home to Rutgers.
+# Considering you are a scientist at CERN and happen to run into Alan during his vacation, what is the probability that Alan went on a cruise to Jaimaca?
