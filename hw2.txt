@@ -184,18 +184,27 @@ end:
 # Specifically, the "repeated subtraction" encoding method, which we did in his class for the case r=1.
 # I will try to generalize it here.
 
-# So if you do the birthday problem, its equivalent to picking k days from N distinct days, 
+# So if you do the birthday problem, its equivalent to picking k days from N distinct days,(numbered 1,2,...,N-1,N)
 # then multiplying by k! for the possible permutations of those days, then dividing by N^k
 # for all the possible days you could have been born. This gives the probability of any two people not having the same birthday. 
 
 # Since we want "almost birthdays" then we have to do a little trick. 
 # Instead of taking from our N distinct days, lets choose k out of N- k*r days, then multiply by k! and divide by N^k. 
 # If you were to imagine labelling all the possible birthdays on N balls, 
-# and put them in an urn, then making sure that you do not take those who are exactly r apart, is equivalent to just
+# and put them in an urn, then making sure that you do not take those who are exactly or less than r apart, is equivalent to just
 # taking all of those kr balls out that are the "bad balls". 
-#
-# We also must condition on where you put the first birthday, with probability (N-kr)/(N), because we have N-kr spots that are not in the bad intervals, apriori.  
 
+# If you take a random string of numbers that are distinct and less than or equal to N, order them in a list, and subtract ir from them where i=0...N
+# and i is the order the number appears in the list, you make a mapping from choosing the birthdays to a problem that is merely choosing k numbers from N-k*r.
+# Thus if we can solve this problem, we can figure out the almost Birthday problem.
+
+# If any number in the list is less than or equal to a previous number, then you have an "almost birthday", so to not get an almost birthday, after doing the 
+# repeated subtraction trick you must have a list of distinct positive integers <= N-k*r.
+# This is perhaps best demonstrated visually with Maple or on a blackboard.
+
+
+# We also must condition on where you put the first birthday, with probability (N-kr)/(N), because we have N-kr spots that are not in the bad intervals, apriori.  
+# The k!/N^k stays the same.
 
 
 
@@ -213,7 +222,7 @@ end:
 
 #My invented one
 ABsim:= proc(k,N,r) local prob:
-prob:= (k)! /N^(k)  * (N-k*r)! /((k)! * (N -k*r - k)!) /((N-k*r)/N);
+prob:= (k)! /N^(k)  * (N-k*r)! /((k)! * (N -k*r - k)!) /((N-k*r)/N); # By the conditional probability formula. 
 prob:=evalf(prob):
 return(prob):
 end:
