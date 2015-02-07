@@ -1,0 +1,26 @@
+<!doctype html>
+
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+ <title>Battleship Experiment</title>
+  </head><body bgcolor="#ffffff"><h1>Probabilistic Analysis of Battleship Strategy</h1>
+ 
+ A while ago, I created a battleship game for a computer science class I was taking. One of the extra credit assignments in the class was to design an easy "AI" and a difficult "AI", for the game.
+ I.e., design a good strategy for winning and a strategy for winning that was passable.
+ 
+ For the easy strategy, I implemented an algorithm that guessed totally at random. For the hard strategy, it guesses every other square on the grid.
+ This follows from the fact that in an ordinary game of battleship, the smallest boat that can be placed down is 2 spaces long. So if you eliminate 
+ all spaces of length 2, you must have found all the boats, and so you can win the game.
+ 
+ A visual explanation is : 
+ 
+ <img src="10x10board.gif" style= "width: 304px; height: 228px">
+ 
+This is the ordinary board. The strategy I designed targets squares similar to this:
+
+<img src ="10x10boardFilledExes.gif" style= "width: 304px; height: 228px">
+
+Lets analyze why this is the case.
+
+<img src="http://latex.codecogs.com/gif.latex?Pr(A|B)=\frac{\Pr(B|A)\Pr(A)}{\Pr(B|A)\Pr(A)+\Pr(B|\neg A)\Pr(\neg A)}" border="0"/>
+
+</html>
