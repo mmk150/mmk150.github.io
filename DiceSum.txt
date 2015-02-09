@@ -1,0 +1,75 @@
+import java.util.*;
+public class DiceSum {
+
+	
+	public static void main(String[] args){
+		boolean notfound=true;
+		int[] C={1,2,3,4,5,6};
+		int [] B= new int[6];
+		int[] A= new int[6];
+		int [] D= {1,2,3,4,5,6,5,4,3,2,1};
+		int [] Sum={ 2,3,4,5,6,7,8,9,10,11,12};
+		while(notfound){
+			ArrayList<Integer> E = new ArrayList(11);
+		
+			for(int i=0;i<6;i++){
+				//One dice definitely has values between 1 and 12.
+				// The other probably is between 1 and 6 to make that sum work out.
+			int a= (int)Math.ceil(Math.random() * 12);
+			int b= (int)Math.ceil(Math.random() * 6);
+			A[i]=a; B[i]=b;
+	
+		}
+			for (int i=0;i<6;i++){
+	
+			}
+			
+		
+		for (int i=0;i<6;i++){
+
+			}
+	
+			
+			Arrays.sort(A);
+			Arrays.sort(B);
+			
+			
+		
+		
+			
+			
+			
+			
+		for(int aleph=0;aleph<11;aleph++){
+			int count=0;
+		
+			for(int j=0; j<6;j++){
+				for(int k=0;k<6;k++){
+					if(A[j] + B[k] == Sum[aleph] ){ count++;}
+				}
+			}
+			if(D[aleph]==count){ E.add(count);}
+			else{ E.add(-1);}
+		}
+		if(E.lastIndexOf(-1)==-1){ notfound=false;}
+		boolean normalitycheck=true;
+		for( int i =0;i<6; i++){
+			if(C[i]!=A[i] || B[i]!=C[i]){ normalitycheck=false;}
+			
+		}
+		if(normalitycheck==true){notfound=true;}
+		
+		}
+		System.out.println("The numbers, Mason!");
+		for (int i=0;i<6;i++){
+		System.out.print(A[i]);
+		if(i!=5){ System.out.print(", ");}
+		} System.out.println();
+		
+		
+		for (int i=0;i<6;i++){
+			System.out.print(B[i]);
+			if(i!=5){ System.out.print(", ");}
+		}
+}
+}
