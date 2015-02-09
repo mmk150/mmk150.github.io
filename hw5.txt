@@ -1,0 +1,267 @@
+#Matthew Kownacki
+#February 8, 2015 Assignment hw5.txt
+# Ok to post this assignment
+
+#PROBLEM 1
+#__________________________________________________________
+
+#I am going to bootstrap the MomN and moment-list procedures made in class to work for the PGF function for the given question.
+
+MomNP1:=proc(k) local i,av,x,f,M:
+
+f:=(p*x + (1-p)/x)^n :
+
+av:=subs(x=1,diff(f,x)):
+
+M:=[av]:
+
+f:=f/x^av:
+
+
+f:=x*diff(f,x):
+for i from 2 to k do
+f:=x*diff(f,x):
+M:=[op(M),subs(x=1,f)]:
+od:
+M:
+ 
+end:
+
+#the list [av,variance, standardized-k-th moment]
+AlphaP1:=proc(k) local M,sd1:
+M:=MomNP1(k): 
+sd1:=sqrt(M[2]):
+
+[M[1],M[2],seq(M[i]/sd1^i , i=3..k)]:
+
+end:
+
+#Lets run AlphaP1 now. 
+
+
+# J:= Simplify(AlphaP1(10)):
+# A:=seq(limit(J[2*i], n=infinity),i=2..(floor(nops(J)/2)));
+# A:= 3,15,105,945
+# This returns the even moments greater than 2.
+# A:=seq(sqrt(limit(J[2*i -1], n=infinity)),i=2..(floor(nops(J)/2)));
+# A:= 0,0,0,0
+# This returns the odd moments greater than 1.
+
+# So this seems to be normally distributed. 
+
+# I tried to do some "symbol crunching" but I couldn't quite figure out how to get Maple to deal with "k" as just a letter,
+# since Maple seems to get pretty unhappy when I use a letter as a for loop end parameter.
+# I will explore this later and update the text file if I find something. 
+
+
+
+
+#PROBLEM 2
+#__________________________________________________________
+
+
+
+SymDie:= proc(f,n,k) local i , j, A,L,P,x,pgf :
+pgf:=0:
+
+#Using loop to make pgf of the problem for one die roll
+for i from 1 to f do:
+pgf:= pgf + x^i :
+od:
+#raising pgf to nth power for the n rolls. 
+pgf:=pgf^n :
+
+return(MomNs(pgf,x,k)):
+
+end:
+
+SymDieStand:= proc(f,n,k) local i , j, A,L,P,x,pgf :
+pgf:=0:
+
+#Using loop to make pgf of the problem for one die roll
+for i from 1 to f do:
+pgf:= pgf + x^i :
+od:
+#raising pgf to nth power for the n rolls. 
+pgf:=pgf^n :
+
+return(AlphaF(pgf,x,k)):
+
+end:
+
+
+TestSymDie:= proc() local L,i,j,k,M:
+M:=[]:
+for i from 2 to 14 do:
+j:=14:
+L:= SymDieStand(i,n,j):
+for k from 1 to nops(L) do:
+L[k]:= limit(L[k],n=infinity):
+od:
+M:=[op(M), L]:
+od:
+return(M):
+end:
+
+
+# For each value of f greater than 1, TestSymDie returns
+# [ 0, 3, 0, 15, 0, 105, 0, 945, 0, 10395, 0, 135135]
+# for the first fourteen standardized moments as n approaches infinity, except the mean and second moment.  
+# For f=1, then obviously the average will be n, and the subsequent moments will be 0.
+# Thus it looks approximately normal for large n as the odd moments are 0 and the even moments match up with those of the normal. 
+
+
+
+
+
+
+
+
+#PROBLEM 5
+#__________________________________________________________
+# I thought this problem was a lot easier than it was made out to be!
+
+
+# The probability of the sum of two regular dice to be k, for k=2..12 is:
+# 1/36, 2/36, 3/36, 4/36, 5/36,6/36,5/36,4/36,3/36,2/36,1/36
+# respectively
+
+# Now, there is nothing special at all about the faces of the die, except what they sum to and how many ways that can happen
+# So if we let die A={a1,a2,a3,a4,a5,a6}, and die B={b1,b2,b3,b4,b5,b6}. Let all the faces on die A correspond to the
+# values of a regular six sided die, except subtract r. Let all the faces on die B be similar, except add r to all the faces.
+# For any integer r, the sum of the die is going to stay the same. So nothing is really changed!
+# Example: A={0,1,2,4,5}, B={2,3,4,5,6,7}
+
+# Then I realized we probably want to restrict the numbers on the die to postive integers.
+
+# So I realize there is probably a smart way to do this, but I'm sort of lazy, and why think when we can figure it out experimentally?
+
+# Also, I think it's a little mean to make my computer solve something like this by guess and check through a memory-intensive program like Maple, so I wrote some java code to do it faster.
+
+# You can find the java code in the file accompanying this homework file on my site.
+
+# Anyways, my java code tells me that {1,3,4,5,6,8} and {1,2,2,3,3,4} work here. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#We will use some stuff from classes 4 and 5 since it is sure to be very helpful.
+#____________________________________________________________________________
+
+#PGF(P,L,x): the probability generating function of
+#the random variable L defined on {1, ..., nops(L)}
+#with prob. dist. P
+PGF:=proc(P,L,x) local i:
+add(P[i]*x^(L[i]),i=1..nops(L)):
+end:
+
+#MomS(P,L,k):the k-th straight moment of the r.v. L defined on
+#prob. space given P
+MomS:=proc(P,L,k) local i:
+
+add(P[i]*L[i]^k,i=1..nops(L)):
+
+end:
+
+
+#Mom(P,L,k):the k-th  moment about the mean of the r.v. L defined on
+#prob. space given P
+Mom:=proc(P,L,k) local i,av:
+av:=Expec(P,L):
+add(P[i]*(L[i]-av)^k,i=1..nops(L)):
+
+end:
+
+#standard deviation of r.v. L with prob. dist. P
+sd:=proc(P,L)
+
+evalf(sqrt(Mom(P,L,2))):
+end:
+
+### END STUFF FROM CLASS 4
+
+
+### Class 5 Stuff
+#___________________________________________________________________________________
+#MomN(P,L,k): A nicer way to compute the moments about the mean 
+#we output the LIST [Exp,Var,3rd-moment, 4th-moment, ...,k-the
+#moment (the Exp is NOT the expect. about the mean, alias 0) 
+#the k-th  moment about the mean of the r.v. L defined on
+#prob. space given P
+MomN:=proc(P,L,k) local i,av,x,f,M:
+
+f:=PGF(P,L,x):
+
+av:=subs(x=1,diff(f,x)):
+
+M:=[av]:
+
+f:=f/x^av:
+
+
+f:=x*diff(f,x):
+for i from 2 to k do
+f:=x*diff(f,x):
+M:=[op(M),subs(x=1,f)]:
+od:
+M:
+ 
+end:
+
+#the list [av,variance, standardized-k-th moment]
+Alpha:=proc(P,L,k) local M,sd1:
+M:=MomN(P,L,k): 
+sd1:=sqrt(M[2]):
+
+[M[1],M[2],seq(M[i]/sd1^i , i=3..k)]:
+
+end:
+#MomNs(f,x,k): Given the probabity generating function f
+#in the variable x, for some r.v. under some prob. distibution
+#outputs the list [av,var, stan.moms]
+
+MomNs:=proc(e,x,k) local i,av,M, f:
+
+f:=e/subs(x=1,e):
+
+av:=subs(x=1,diff(f,x)):
+
+M:=[av]:
+
+
+f:=f/x^av:
+
+
+f:=x*diff(f,x):
+for i from 2 to k do
+f:=x*diff(f,x):
+M:=[op(M),subs(x=1,f)]:
+od:
+M:
+ 
+end:
+
+
+#Standardized version of Alpha using a function
+AlphaF:=proc(f, x, k) local M, i:
+    M:=MomNs(f, x, k):
+    return [M[1], M[2], seq(M[i]/M[2]^(i/2), i=3..k)]:
+end:
+
+## END STUFF FROM CLASS 5

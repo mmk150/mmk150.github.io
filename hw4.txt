@@ -1,0 +1,221 @@
+#Matthew Kownacki
+#February 8, 2015 Assignment hw4.txt
+# Ok to post assignment
+
+#PROBLEM 1
+#________________________________________________________________
+
+#with(LinearAlgebra):
+#A:= Matrix(2);
+#A(1,1):=2, A(2,2):=4 ;
+#IsMatrixShape(A,diagonal) returns true
+
+#Multiply(A,A) returns 
+#		| 4,  0 |
+#		| 0, 16 |
+
+# B:= GramSchmidt([A(..,1),A(..,2)]);
+# returns  the fist column vector of A and the second column vector of A as they are already orthogonal
+
+
+#Normalize([A(..,1),A(..,2)]);
+# Returns 1/4 * A
+
+#PROBLEM 2
+#________________________________________________________________
+
+ExtractData:= proc(A,i,j,a)    local B,k,l, bools:
+#Input is a list of lists, the ith component, and the jth component, and the parameter a
+# Returns a sublist of j-th components of A(k), such that the ith component of A(k) will always be equal to a
+if type(A,list) = false then
+return("A is not a list!"):
+fi:
+if type(A[1],list)=false then
+return("A is not a list of lists!"):
+fi:
+if i > nops(A[1])  or j> nops(A[1]) then
+return("i or j are not positions in A!"):
+fi:
+B:=[]:
+for k from 1 to nops(A) do:
+if A[k][i] = a then
+B:=[op(B),A[k][j]]:
+fi:
+od:
+return(B):
+end:
+
+#Computes the standard deviation of a list using the biased formula for sample variance and taking the square root. 
+# This is pretty much the same as running sd([1/nops(L) $ nops(L)],L), I just thought I could use the coding practice. 
+
+SD:=proc(L)		local i,X,sum:
+X:= AveS(L):
+sum:=0:
+for i from 1 to nops(L) do:
+sum:=sum+ (L[i]-X)^2 
+end:
+sum:=sum/nops(L) :
+return(evalf(sqrt(sum))):
+end:
+
+#For the females of our class, the average and standard deviation of height are respectively : 165.1666667 , 6.094168434
+#For the males of our class,the average and standard deviation of height are respectively : 176.3636364, 5.261744045
+#For the females in our class, the average and standard deviation of age are respectively: 25, 1.914854216
+#For the males in our class, the average and standard deviation of age are respectively: 29.63636364, 12.85777252
+#For the brown-eyed people in our class,  the average and standard deviation of age are respectively: 29.45454545, 12.49991736
+#For the blue-eyed people in our class, the average and standard deviation of age are respectively: 25.40000000, 5.276362383
+
+
+
+
+#PROBLEM 3
+#________________________________________________________________
+
+
+fip:=proc(perm) local i,t:
+t:=0:
+for i from 1 to nops(perm) do:
+if perm[i]= i then 
+t:=t+1:
+fi:
+od:
+return(t):
+end:
+
+FixPointMoments:=proc() local i,j,t,L,D,num,M,C,k:
+ M:=[]:
+num:=0:
+for i from 1 to 7 do:
+L:=[]:
+num:=0:
+C:=[]: D:=[]:
+t:=combinat[permute](i):
+
+for j from 1 to nops(t) do:
+
+C:= [op(C), 1/nops(t)]:
+D:=[op(D), fip(t[j])]:
+od:
+#print(C):
+for k from 1 to 9 do:
+L:=[op(L), evalf(MomS(C,D,k))]:
+od:
+M:=[op(M),L]
+od:
+return(M):
+
+end:
+
+# FixPointMoments returns
+# [[1., 1., 1., 1., 1., 1., 1., 1., 1.], [1., 2., 4., 8., 16., 32., 64., 128., 256.], [1., 2., 5., 14., 41., 122., 365., 1094., 3281.], 
+#[1., 2., 5., 15., 51., 187., 715., 2795., 11051.], [1., 2., 5., 15., 52., 202., 855., 3845., 18002.], [1., 2., 5., 15., 52., 203., 876., 4111., 20648.], [1., 2., 5., 15., 52., 203., 877., 4139., 21110.]]
+
+# So the first moments are always 1. 
+# The second moments are 2 when n>1.
+# Conjecture: The moments start getting very similar as n grows larger, so there must be some sort of sequence a(n) that the sequence of moments converge to as n grows.
+# I can't seem to get anything concrete by subtracting differences between terms, or between the sequences themselves, so lets just check by looking at the first couple moments of n=7 up in the OEIS.
+
+# OEIS has sequence A000110, which are Bell Numbers. This sequence (ignoring the zeroeth term) seems to be what our sequence of moments goes to. 
+
+
+
+#PROBLEM 4
+#_________________________________________
+
+HowManyGames:= proc(A,m,n) local t,i,k,gen1,gen2,genf,gen:
+
+gen1:=0:
+for i from 1 to nops(A) do:
+gen1:= gen1 + x^(A[i]) :
+
+od:
+gen2:=subs(x=y,gen1):
+genf:= gen1+ gen2:
+genf:= 1/(1-genf):
+
+t:=taylor(taylor(genf,x,m+1),y,n+1):
+return(coeff(coeff(t,y,n),x,m));
+end:
+
+#Soccer ties: seq(HowManyGames({1}, i, i), i = 1 .. 10); returns 2, 6, 20, 70, 252, 924, 3432, 12870, 48620, 184756
+#Basketball ties: seq(HowManyGames({1, 2}, i, i), i = 1 .. 10); returns 2, 14, 84, 556, 3736, 25612, 177688, 1244398, 8777612, 62271384
+# 3-Point Basketball ties: seq(HowManyGames({1, 2, 3}, i, i), i = 1 .. 10); returns 2, 14, 106, 784, 6040, 47332, 375196, 3001966, 24190148, 196034522
+# American Football ties: seq(HowManyGames({2, 3, 6, 7, 8}, i, i), i = 1 .. 10); returns 0, 2, 2, 6, 24, 62, 206, 712, 2076, 7284
+#
+#
+
+
+####STUFF FROM CLASS 4
+#_________________________________________________________________________________________________
+
+#gathering statistics about the class
+#[Name,Gender,Age,Height,EyeColor]
+ClassStat:=proc() local A:
+A:=
+[
+[Mingjia,F,25,164,Br],
+[Anthony,M,21,173,Br],
+[Aniket,M,21,173,Br],
+[Abigail,F,22,173,Br],
+[Nathan,M,24,172,Br],
+[Sowmya,F,23,155,Br],
+[Ha,F,27,162,Br],
+[Kafung,F,27,165,Br],
+[Matthew,M,21,176,Bl],
+[Marc,M,25,172,G],
+[Melissa,F,26,172,Bl],
+[Collin,M,30,183,Bl],
+[John,M,26,173,Br],
+[Elliot,M,18,179,Bl],
+[Michael,M,44,172,Br],
+[Alex,M,32,189,Bl],
+[Doron,M,64, 178,Br]
+]:
+end:
+
+#AveS(L): the simple average of a list L
+AveS:=proc(L) 
+
+evalf(convert(L,`+`)/nops(L)):
+
+end:
+
+
+#Expec(P,L):
+Expec:=proc(P,L) local i:
+
+add(P[i]*L[i],i=1..nops(L)):
+
+end:
+
+#PGF(P,L,x): the probability generating function of
+#the random variable L defined on {1, ..., nops(L)}
+#with prob. dist. P
+PGF:=proc(P,L,x) local i:
+add(P[i]*x^(L[i]),i=1..nops(L)):
+end:
+
+#MomS(P,L,k):the k-th straight moment of the r.v. L defined on
+#prob. space given P
+MomS:=proc(P,L,k) local i:
+
+add(P[i]*L[i]^k,i=1..nops(L)):
+
+end:
+
+
+#Mom(P,L,k):the k-th  moment about the mean of the r.v. L defined on
+#prob. space given P
+Mom:=proc(P,L,k) local i,av:
+av:=Expec(P,L):
+add(P[i]*(L[i]-av)^k,i=1..nops(L)):
+
+end:
+
+#standard deviation of r.v. L with prob. dist. P
+sd:=proc(P,L)
+
+evalf(sqrt(Mom(P,L,2))):
+end:
+# STUFF FROM CLASS FOUR FINISHED
+
