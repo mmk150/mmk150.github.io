@@ -110,11 +110,14 @@ end:
 # For f=1, then obviously the average will be n, and the subsequent moments will be 0.
 # Thus it looks approximately normal for large n as the odd moments are 0 and the even moments match up with those of the normal. 
 
+#PROBLEM 3
+#__________________________________________________________
+I will be working on this solution in my free time over the next week, just for fun. 
 
 
-
-
-
+#PROBLEM 4
+#__________________________________________________________
+I will be working on this solution in my free time over the next week, just for fun. 
 
 
 #PROBLEM 5
@@ -134,7 +137,7 @@ end:
 
 # Then I realized we probably want to restrict the numbers on the die to postive integers.
 
-# So I realize there is probably a smart way to do this, but I'm sort of lazy, and why think when we can figure it out experimentally?
+# So I realize there is probably a smart way to do this, but why think when we can figure it out experimentally?
 
 # Also, I think it's a little mean to make my computer solve something like this by guess and check through a memory-intensive program like Maple, so I wrote some java code to do it faster.
 
