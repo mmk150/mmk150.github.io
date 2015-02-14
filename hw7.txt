@@ -1,0 +1,164 @@
+#Matthew Kownacki
+#February 13, 2015,  hw7.txt 
+# Ok to post
+
+print("File loaded"):
+
+#PROBLEM 1
+#______________________________________________________________________
+
+#PB(p,n,k): The Bayesian "degree of belief" that the coin has probability p
+#of Heads if in an experiment with n tosses you got k Heads
+PBg:=proc(p,n,k,c0,a,b) local P,H,C:
+#With prob. 1/2 Pr(H)=p, but the remaining probabilities are equally likely
+#If P=p then binomial(n,k)*p^k*(1-p)^(n-k) (prob. c0)
+#If all equally likely
+#Total prob. that you got k Heads =binomial(n,k)*p^k*(1-p)^(n-k)*c0
+#1/2*int(binomial(n,k)*P^k*(1-P)^(n-k),P=a..b):
+H:=binomial(n,k)*p^k*(1-p)^(n-k)*c0:
+C:=(1-c0)*int(binomial(n,k)*P^k*(1-P)^(n-k),P=a..b):
+H/(H+C):
+
+end:
+
+
+
+
+
+
+
+
+
+
+
+
+#PROBLEM 2
+#______________________________________________________________________
+
+OneRun:=proc(p,n) local t,i,c,A,X,HeadCount,prob:
+
+with(Statistics):
+prob:=p:
+X:=RandomVariable(Uniform(0,1)):
+HeadCount:=0:
+
+for i from 1 to n do
+A:=Sample(X,1);
+c:= A(1);
+
+if c<prob then
+HeadCount:=HeadCount+1:
+fi:
+HeadCount:
+od:
+end:
+
+
+
+#PROBLEM 3
+#______________________________________________________________________
+
+
+ENHnS:= proc(p,n,eps,K) local i, t,truecount:
+print("Start ENHnS"):
+if K<100 then return("K must be greater than 100"): fi:
+t:=0:
+truecount:=0:
+for i from 1 to K do:
+t:=ENHn(p ,n,OneRun(p,n) ,eps);
+if t =true then 
+truecount:=truecount+1:
+fi:
+od:
+return(evalf(truecount/K));
+
+
+
+end:
+
+
+
+
+
+
+
+#PROBLEM 5
+#______________________________________________________________________
+
+
+# We need a rate parameter l
+
+SimulatePoisson:=proc(n,a,K) local k,i,j,T:
+T:=[0]:
+for i from 1 to n-1 do:
+T:=[op(T),0]:
+od:
+print(T);
+for i from 1 to K+1 do:
+
+k:=OneRun(a/n,n);
+
+T[k+1]:=T[k+1]+1;
+od: 
+
+for i from 1 to nops(T) do:
+T[i]:=T[i]/K:
+od:
+return(T):
+end:
+
+
+
+
+
+#################################################
+#______________________________________________________________________
+
+
+#N(x): The cumulative distribution function of the standard Normal Distribution N(0,1)
+N:=proc(x) local t:
+ int(exp(-t^2/2)/sqrt(2*Pi),t=-infinity..x):
+end:
+
+#HMsd(eps): How many standard-deviations to tolerate with confidence level eps?
+HMsd:=proc(eps) local x:
+
+fsolve(N(-x)=eps/2,x):
+
+end:
+
+
+
+#ENHn(p,n,k,eps): If someone claims that the Pr(H) is p, and you toss
+#it n times, and get k Heads should you believe it or not with CONFIDENCE
+#1-eps
+ENHn:=proc(p,n,k,eps) local Y,t:
+
+Y:=abs((k-n*p)/sqrt(n*p*(1-p))):
+
+evalb(evalf(int(exp(-t^2/2)/sqrt(2*Pi),t=-infinity..-Y))>=eps/2):
+end:
+
+#CoInt(p,n,eps): The confidence interval of level 1-eps
+CoInt:=proc(p,n,eps) local s,sd:
+sd:=sqrt(n*p*(1-p)):
+
+s:=HMsd(eps):
+
+evalf([n*p-s*sd, n*p+s*sd]):
+
+end:
+
+#PB(p,n,k): The Bayesian "degree of belief" that the coin has probability p
+#of Heads if in an experiment with n tosses you got k Heads
+BP:=proc(p,n,k) local P,H,C:
+#With prob. 1/2 Pr(H)=p, but the remaining probabilities are equally likely
+#If P=p then binomial(n,k)*p^k*(1-p)^(n-k) (prob. 1/2)
+#If all equally likely
+#Total prob. that you got k Heads =binomial(n,k)*p^k*(1-p)^(n-k)*1/2
+#1/2*int(binomial(n,k)*P^k*(1-P)^(n-k),P=0..1):
+H:=binomial(n,k)*p^k*(1-p)^(n-k)*1/2:
+C:=1/2*int(binomial(n,k)*P^k*(1-P)^(n-k),P=0..1):
+H/(H+C):
+
+end:

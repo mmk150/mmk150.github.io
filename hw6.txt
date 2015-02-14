@@ -1,0 +1,170 @@
+#Matthew Kownacki
+#February 13, 2015,  hw6.txt 
+# Ok to post
+
+
+#PROBLEM 1
+#___________________________________________________________
+
+
+AcceptNHnormal:=proc(p,n,k,eps) local Y,t:
+
+Y:=abs((k-n*p)/sqrt(n*p*(1-p))):
+
+evalb(evalf(int(exp(-t^2/2)/sqrt(2*Pi),t=-infinity..-Y))>=eps/2):
+end:
+
+
+#PROBLEM 2
+#___________________________________________________________
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#PROBLEM 3
+#___________________________________________________________
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#PROBLEM 4
+#___________________________________________________________
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#PROBLEM 5
+#___________________________________________________________
+
+
+Pr:=proc(P,x,n,a,b) local sum, x,f,gen:
+
+
+
+gen:=P(x)^n;
+sum:=add(coeff(expand(gen),x,i),i=a..b):
+
+
+
+
+
+
+
+
+end:
+
+#PROBLEM 6
+#_______________________________________________________________
+
+
+
+
+
+#####################
+#### Class 6 Stuff ##
+#####################
+#ID(f,x,k): Given the probabity generating function f
+#in the variable x, for some r.v. under some prob. distibution
+#outputs the list [av,var, std. moms]
+
+ID:=proc(e,x,k) local i,av,M, f:
+
+f:=e/subs(x=1,e):
+
+av:=subs(x=1,diff(f,x)):
+
+M:=[av]:
+
+
+f:=f/x^av:
+
+
+f:=x*diff(f,x):
+for i from 2 to k do
+f:=x*diff(f,x):
+M:=[op(M),subs(x=1,f)]:
+od:
+M:
+ 
+[M[1],M[2],seq(M[i]/M[2]^(i/2),i=3..k)]:
+end:
+
+#Bin(n,k,p): the prob. of getting exactly k Heads tossing
+#a loaded coin with Pr(H)=p, n times
+Bin:=proc(n,k,p) local x:
+
+ simplify(factor(subs(x=0,diff((p*x+(1-p))^n,x$k))/k!)):
+
+
+
+end:
+
+
+#BinF(n,k,p): the prob. of getting exactly k Heads tossing
+#a loaded coin with Pr(H)=p, n times
+BinF:=proc(n,k,p) local x:
+
+ binomial(n,k)*p^k*(1-p)^(n-k):
+
+
+
+end:
+
+#AcceptNH(p,n,k,eps): Should we accept the Null Hypothesis
+#that Pr(H)=p if we tossed the coin n times and we got
+#k head with CONFIDENCE level 1-eps (eps=.05, or 0.01)
+AcceptNH:=proc(p,n,k,eps) local k0,faroff,i:
+
+k0:=trunc(n*p):
+
+faroff:=abs(k-k0):
+
+#I want to compute the prob. that k is between k0-faroff and
+#k0+faroff
+
+evalb(evalf(add(BinF(n,i,p),i=k0-faroff+1..k0+faroff))<1-eps):
+
+end:
