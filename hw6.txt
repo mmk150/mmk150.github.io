@@ -6,6 +6,7 @@
 #PROBLEM 1
 #___________________________________________________________
 
+# Tests central limit theorem
 
 AcceptNHnormal:=proc(p,n,k,eps) local Y,t:
 
@@ -14,94 +15,107 @@ Y:=abs((k-n*p)/sqrt(n*p*(1-p))):
 evalb(evalf(int(exp(-t^2/2)/sqrt(2*Pi),t=-infinity..-Y))>=eps/2):
 end:
 
+# After experimenting with several values of the input, I determined that I mostly got the same output as AcceptNH
+# This is because all we do is standardize the binomial distribution here to work for standard normal.
+# Recall that the binomial distribution is approximately normal for big values of n.
 
 #PROBLEM 2
 #___________________________________________________________
 
+Prob2:= proc() local f1,f2, g1,g2,n:
+f1:=add(binomial(40,k)*binomial(40+k,k)*x^k,k=0..40):
+
+f2:=add(binomial(60,k)*binomial(60+k,k)*x^k,k=0..60):
+
+g1:= add(binomial(40,k)^3*x^k,k=0..40):
+g2:= add(binomial(60,k)^3*x^k,k=0..60):
+#As far as I can tell ID turns a combinatorial generating function into a probability generating function in the first line of implementation anyway
+
+print(ID(f1,x,8));
+print(ID(f2,x,8));
+print(ID(g1,x,8));
+print(ID(g2,x,8));
 
 
 
+#[28.26254448, 7.0973073, -0.09468098412, 2.956221463, -0.9328799105, 14.44891643, -9.515824255, 99.57827949]
+#[42.40477438, 10.632723, -0.07712003253, 2.970602449, -0.7639712647, 14.57620868, -8.176416570, 122.0920172]
+#[20., 3.3895059, 0.000001233917529, 2.983619711,-0.0002236863592, 14.74390307, -0.1156064798, 103.3599894]                                                  
+#[30., 5.0559670, 8.796170798 10^-8  , 2.989005981, -0.0005218411099,14.80222012, -0.3560516554, 111.4703773]
 
-
-
-
-
-
-
-
-
-
-
-
+# Which have moments that are pretty similar to those of the normal distribution from 3rd to 8th moments. 
+end:
+# Thus the two cgfs/pgfs are asymptotically normal through the 8th moment
 
 
 #PROBLEM 3
 #___________________________________________________________
 
+prob3:= proc() local P,g,n,f,i,x,L:
+
+P:=p[1]*x^(L[1])+p[2]*x^(L[2])+p[3]*x^(L[3])+p[4]*x^(L[4]):
+
+g:= ID(P^n,x,6):
 
 
+f:=[]:
+for i from 1 to nops(g) do: 
+f:= [op(f),limit(g[i],n=infinity)]:
+od:
+return(f):
+end:
 
 
-
-
-
-
-
-
-
-
-
-
+# This returns [ inf, inf ,0,3,0,15], so the four sided die is asymptotically normal 
+# regardless of whether it's fair or not. 
 #PROBLEM 4
 #___________________________________________________________
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# The variance formula is E[(X-E[X])^2 ]
+# f:= (P(x))^n
+# E:= n* P'(1) due to the rolls being a sum of i.i.d variables 
+# Also Variance of such a sum is the sum of variances. 
+#V:= n*subs(x=1,diff((x*diff((P(x)/x^E),x),x)) = n*var(P(x))
 
 
 
 #PROBLEM 5
 #___________________________________________________________
+# Probability of the die whose pgf is P(x) if rolled n times
+# has a sum of dots between a and b.
 
-
-Pr:=proc(P,x,n,a,b) local sum, x,f,gen:
-
-
-
-gen:=P(x)^n;
-sum:=add(coeff(expand(gen),x,i),i=a..b):
-
-
-
-
-
-
-
-
+Pr:=proc(P,x,n,a,b) local sum,gen,f:
+f:=expand(P^n):
+sum:=add(coeff(f,x,i),i=a..b):
+return(sum):
 end:
 
 #PROBLEM 6
 #_______________________________________________________________
+#Pr(P,x,n, E+c1*sqrt(V),E+c2*sqrt(V))
+# phi(c2)-phi(c1)
+#P:=(x+2*x^2+x^3)/4
+#c1=-2   c2=2 and for n=200
+
+CentralLT:=proc(P,x,n,c1,c2) local Mean,E, V,pr,phi,f:
+f:= P:
+Mean:=subs(x=1,diff(f,x)):
+V:=n*subs(x=1,diff(x*diff(f/x^Mean,x),x)):
+#print(V):
+E:=n*Mean:
+#print(E):
+#print([P,x,n,E+c1*sqrt(V),E+c2*sqrt(V)]):
+##So Pr doesn't like noninteger values of a and b so we will round down and round up respectively to make this inclusive
+#
+pr:=evalf(Pr(P,x,n,ceil(E+c1*sqrt(V)),floor(E+c2*sqrt(V)))):
+phi:=evalf( int(exp(-t^2/2)/sqrt(2*Pi), t=-infinity..c2) -int(exp(-t^2/2)/sqrt(2*Pi), t=-infinity..c1)):
+return([pr,phi]):
+end:
 
 
 
-
+## The above procedure returns 
+# [.9597692603, .9544997356]
+# So the central limit theorem seems to apply just fine ( probably off due to rounding errors). 
 
 #####################
 #### Class 6 Stuff ##
@@ -114,7 +128,7 @@ ID:=proc(e,x,k) local i,av,M, f:
 
 f:=e/subs(x=1,e):
 
-av:=subs(x=1,diff(f,x)):
+av:=evalf(subs(x=1,diff(f,x))):
 
 M:=[av]:
 
