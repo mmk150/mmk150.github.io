@@ -1,0 +1,238 @@
+#Matthew Kownacki
+#February 22,2015 Assignment hw8.txt
+#Ok to post
+
+
+print("File loaded"):
+
+ 
+#PROBLEM 1
+#_____________________________________________________
+# (a/N) is my conjectured guess
+f:=proc(N,a) local A,x,i,p,B:
+p:=1/2:
+A:={f_(0)=0,f_(1)= p*(f_(2))};
+for i from 2 to N-1 do:
+A:={op(A),f_(i)= p* (f_(i+1)) + (1-p)*(f_(i-1))}:
+od:
+A:={op(A),f_(N)=1}:
+B:=solve(A,[seq(f_(i),i=0..N)]):
+B[1][a+1]:
+end:
+
+
+#PROBLEM 2
+#_____________________________________________________
+
+ExpectedDurationE:=proc(N,p) local A,x,i:
+A:={f_(0)=0,f_(1)= p*(1+f_(2))+ (1-p)* (1+f_(0))}:
+for i from 2 to N-1 do:
+A:={op(A),f_(i)= p* (1+f_(i+1)) + (1-p)*(f_(i-1)+1)}:
+od:
+A:={op(A),f_(N)=0}:
+solve(A,[seq(f_(i),i=0..N)]):
+
+end:
+
+
+
+#PROBLEM 3
+#_____________________________________________________
+
+
+# The formula is a*(N-a) 
+# This is easily guessed from the pyramidal looking pattern of the expected time in #2
+
+
+
+
+#PROBLEM 4
+#_____________________________________________________
+# The written algorithm returns the following:
+#GRsim(10,5,1/2,100000);
+#                   0.4992900000, 25.01664000
+#GRsim(17,8,1/2,10000);
+#                   0.4786000000, 72.15220000
+#GRsim(14,5,1/2,10000);
+#                  0.3515000000, 45.47200000
+
+# Which is extremely close to N*(N-a) in all cases
+
+
+
+
+#PROBLEM 5
+#_____________________________________________________
+
+#Investigating PrE on a roulette wheel
+# p=9/19, various N, starting with half our final capital
+
+#evalf(PrE(50,9/19)[50/2]);
+#                         0.06698122976
+#evalf(PrE(80,9/19)[40]);
+#                         0.01456559065
+#evalf(PrE(100,9/19)[50]);
+#                         0.005127349998
+
+#Looks like I won't be heading to Vegas any time soon. 
+
+
+#PROBLEM 6
+#_____________________________________________________
+GRsimWL:= proc(N,a,p,K) local w,d1,d2,g,i:
+
+
+ w:=0:
+ d1:=0:
+d2:=0:
+ for i from 1 to K do
+  g:=GR(N,a,p):
+  w:=w+g[1]:
+
+  d1:=d1+g[2]*g[1]:
+  d2:=d2 + g[2]*(1-g[1]):
+ od:
+
+evalf(w/K),evalf(d1/K),evalf(d2/K):
+
+end:
+
+
+
+
+
+
+
+######Class 8 Stuff ###########
+CT:=proc(p) local n,d,ra:
+n:=numer(p):
+d:=denom(p):
+ra:=rand(1..d)():
+
+if ra<=n then
+ 1:
+else
+ -1:
+fi:
+
+end:
+
+
+#GRv(N,a,p): Verbose version
+#simulating, verbosely, a gambler who enters
+#a casino with a dollars where the stakes are always 1 dollar,
+#and at each round wins a dollar with prob. p
+#and has to pay a dollar with prob. 1-p
+GRv:=proc(N,a,p) local t, c,tos:
+c:=a:
+
+if p<1/2 then
+ print(`You stupidly enter the casino with`, a, `dollars `):
+ print(`hoping to exit with the max`, N, `dollars `):
+elif p=1/2 then
+print(`You enter the casino with`, a, `dollars `):
+ print(`hoping to exit with the max`, N, `dollars `):
+elif p>1/2 then
+
+print(`You wisely enter the casino with`, a, `dollars `):
+ print(`hoping to exit with the max`, N, `dollars `):
+fi:
+
+for t from 1 while (c>0 and c<N) do
+tos:=CT(p):
+c:=c+tos:
+
+ print(`At the`, t, `-th toss you got`, tos, `and now your`):
+ print(`capital is`, c):
+od:
+
+t:=t-1:
+
+if c=0 then
+ print(`Ha Ha, you are now broke! Serves you right`):
+ print(`not only that, you wasted`, t, `tosses `):
+elif c=N then
+
+ print(`Congratulations you are now rich!, can you spare me`):
+ print(`some change `):
+ print( ` only that, it only took you`, t, `tosses `):
+else
+ print(`You fell asleep at the bar `):
+
+
+fi:
+
+end:
+
+#GR(N,a,p): terse version
+#simulating, verbosely, a gambler who enters
+#a casino with a dollars where the stakes are always 1 dollar,
+#and at each round wins a dollar with prob. p
+#and has to pay a dollar with prob. 1-p
+#returns 0,TIMEitTOOK if you are broke
+#or 1,TIMEitTOOK
+GR:=proc(N,a,p) local t, c,tos:
+c:=a:
+
+
+
+for t from 1 while (c>0 and c<N) do
+tos:=CT(p):
+c:=c+tos:
+
+ 
+od:
+
+t:=t-1:
+
+if c=0 then
+ 
+0,t:
+
+elif c=N then
+
+ 1,t:
+else
+ 
+ 
+fi:
+
+end:
+
+#GRsim(N,a,p,K): the gamler goes to the casino K
+#times and does GR(N,a,p)
+GRsim:=proc(N,a,p,K) local w,d,i,g:
+
+ w:=0:
+ d:=0:
+
+ for i from 1 to K do
+  g:=GR(N,a,p):
+  w:=w+g[1]:
+  d:=d+g[2]:
+ od:
+
+evalf(w/K),evalf(d/K):
+
+end:
+
+#PrE(N,p): inputs the max capital, and a prob. p
+#and outputs a list of length N-1 whose a-th entry is
+#the EXACT probability of exiting a winner (with N dollars)
+#provided you entered with a dollars
+PrE:=proc(N,p) local P,eq,var,i:
+
+var:={seq(P[i],i=1..N-1)}:
+eq:={seq(P[i]=p*P[i+1]+(1-p)*P[i-1],i=1..N-1)}:
+eq:=subs({P[0]=0,P[N]=1},eq):
+var:=solve(eq,var):
+
+[ seq(subs(var,P[i]),i=1..N-1)]:
+
+end:
+
+
+
+######### Additional analytical methods
+
+
