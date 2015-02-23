@@ -21,6 +21,9 @@ B[1][a+1]:
 end:
 
 
+# Which is supported through running the above procedure a few times.
+
+
 #PROBLEM 2
 #_____________________________________________________
 
@@ -33,7 +36,7 @@ A:={op(A),f_(N)=0}:
 solve(A,[seq(f_(i),i=0..N)]):
 
 end:
-
+# Looks like a pyramid!
 
 
 #PROBLEM 3
@@ -41,7 +44,7 @@ end:
 
 
 # The formula is a*(N-a) 
-# This is easily guessed from the pyramidal looking pattern of the expected time in #2
+# This is easily guessed from inspecting the pyramidal looking pattern of the expected time in #2
 
 
 

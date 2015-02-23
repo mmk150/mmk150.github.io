@@ -1,0 +1,452 @@
+#Matthew Kownacki
+#February 22, 2015 Assignment hw9.txt
+# Ok to post
+
+print("File Loaded"):
+
+
+#PROBLEM 1
+#_______________________________________________________________________
+
+#AllStrategies(N)
+#Inputs a positive integer N, larger than 1, outputs all legal strategies
+#as a set of lists of integers [a[1],a[2],...a[N-1]]
+#such that 1<= a[i] <= BoS(N)[i] for all i from 1 to N-1
+#Probably not efficient for moderately large N (N>20-ish)
+
+AllStrategies:=proc(N) local i,j,k,C,D,a,num:
+a:= BoS(N):
+C:=[]:
+if N mod 2 =0 then
+num:= floor(N/2)! * (floor(N/2)-1)!
+else
+num:= floor(N/2)! *floor(N/2)! :
+fi:
+
+for i while nops(C)< num do:
+D:=[]:
+for j from 1 to N-1 do:
+D:=[op(D),rand(1..a[j])()]:
+od:
+
+if member(D,C) = false then
+C:=[op(C),D]:
+fi:
+od:
+return(C):
+
+end:
+
+#PROBLEM 2
+#_______________________________________________________________________
+
+#RankStrategies (p,N,i) inputs a probability p, a positive integer N, and an integer i between 1 and N-1 and outputs the 
+# ranking for the strategies from best to worst , if you play the gambling game with probability p, max capital N
+# Note that in the case of equal probabilities for any group of strategies, the ordering they will be returned in the list
+# will not be unique. 
+
+RankStrategies:= proc(p,N,i) local L,j,C,D:
+L:=AllStrategies(N): D:=[]:
+C:=[]:
+for j from 1 to nops(L) do:
+	D:=[op(D),[evalf(PrEG(N,p,L[j])[i]),j]]:
+od:
+D:=sort(D):
+for j from 1 to nops(D) do:
+
+C:=[D[j], op(C)]:
+od:
+
+D:=[]:
+for j from 1 to nops(C) do:
+D:=[op(D),L[C[j][2]]]:
+od:
+print(C):
+return(D):
+end:
+
+
+
+# The output for the strategy rankings of N=8, p=9/19 and i from 1 to 7 is a bit messy, but they are certainly not equivalent(accounting for ordering of equivalent probabilities).
+# The same goes for N=8 and p=10/19. 
+
+# Unless its probability of exactly one half to win, I don't think all strategies will be exactly the same. 
+
+#PROBLEM 3
+#_______________________________________________________________________
+# If you consider the system of recurrence equations outline in the last homework(and done in the previous class)
+# with P(0)=0 and P(N)=1 (N is the desired capital)
+# Then changing the "jumps" from one state to another at any given point
+# Should not change anything as long as they are equally likely, by a symmetry argument
+# So the solution to the original problem (i/N) should be unique to these boundaries and conditions (p=q=1/2)
+# This makes some intuitive sense, since if you get to the end in such a "line" should ultimately depend only on where your starting position
+# in the line is relative to its endpoints, if you are equally likely to move either way, regardless of how far that move will take you. 
+
+
+#PROBLEM 4
+#_______________________________________________________________________
+# Generalized version of expected Duration meant to work off a list 
+# i.e. if we are in state i we jump up by L[i] states and down by -L[i] states, so fiddling around with this logic
+# we reach:
+
+ExpectedDurationEG:=proc(N,p,L) local A,x,i:
+A:={f_(0)=0,f_(1)= p*(1+f_(L[1] + 1))+ (1-p)* (1+f_(0))}:
+for i from 2 to N-1 do:
+A:={op(A),f_(i)= p* (1+f_(i+L[i])) + (1-p)*(f_(i-L[i])+1)}:
+od:
+A:={op(A),f_(N)=0}:
+solve(A,[seq(f_(i),i=0..N)]):
+
+end:
+
+
+#PROBLEM 5
+#_______________________________________________________________________
+# By problem 4, there seems to be a pattern:
+
+#Conjecture:
+# For N odd, the expectation is 2
+# For N =6,10,14... it looks to be 2 except for i= N/2, in which its 1
+# For N=4,8,12... there are some rather interesting alternating patterns, which I cannot seem to find a closed form solution for. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#### Class 8/9 Stuff that may be of use###
+
+###old stuff from C8.txt
+
+#Feb. 16, 2015, C8.txt, Why you should not gamble!
+Help8:=proc(): print(`CT(p), GRv(N,a,p), GR(N,a,p) `): 
+print(`GRsim(N,a,p,K) , PrE(N,p)`):
+end:
+
+#CT(p): inputs a rational prob. p, and outputs
+#+1 with prob. p and -1 with prob. 1-p 
+CT:=proc(p) local n,d,ra:
+n:=numer(p):
+d:=denom(p):
+ra:=rand(1..d)():
+
+if ra<=n then
+ 1:
+else
+ -1:
+fi:
+
+end:
+
+
+#GRv(N,a,p): Verbose version
+#simulating, verbosely, a gambler who enters
+#a casino with a dollars where the stakes are always 1 dollar,
+#and at each round wins a dollar with prob. p
+#and has to pay a dollar with prob. 1-p
+GRv:=proc(N,a,p) local t, c,tos:
+c:=a:
+
+if p<1/2 then
+ print(`You stupidly enter the casino with`, a, `dollars `):
+ print(`hoping to exit with the max`, N, `dollars `):
+elif p=1/2 then
+print(`You enter the casino with`, a, `dollars `):
+ print(`hoping to exit with the max`, N, `dollars `):
+elif p>1/2 then
+
+print(`You wisely enter the casino with`, a, `dollars `):
+ print(`hoping to exit with the max`, N, `dollars `):
+fi:
+
+for t from 1 while (c>0 and c<N) do
+tos:=CT(p):
+c:=c+tos:
+
+ print(`At the`, t, `-th toss you got`, tos, `and now your`):
+ print(`capital is`, c):
+od:
+
+t:=t-1:
+
+if c=0 then
+ print(`Ha Ha, you are now broke! Serves you right`):
+ print(`not only that, you wasted`, t, `tosses `):
+elif c=N then
+
+ print(`Congratulations you are now rich!, can you spare me`):
+ print(`some change `):
+ print( ` only that, it only took you`, t, `tosses `):
+else
+ print(`You fell asleep at the bar `):
+
+
+fi:
+
+end:
+
+#GR(N,a,p): terse version
+#simulating, verbosely, a gambler who enters
+#a casino with a dollars where the stakes are always 1 dollar,
+#and at each round wins a dollar with prob. p
+#and has to pay a dollar with prob. 1-p
+#returns 0,TIMEitTOOK if you are broke
+#or 1,TIMEitTOOK
+GR:=proc(N,a,p) local t, c,tos:
+c:=a:
+
+
+
+for t from 1 while (c>0 and c<N) do
+tos:=CT(p):
+c:=c+tos:
+
+ 
+od:
+
+t:=t-1:
+
+if c=0 then
+ 
+0,t:
+
+elif c=N then
+
+ 1,t:
+else
+ 
+ 
+fi:
+
+end:
+
+#GRsim(N,a,p,K): the gamler goes to the casino K
+#times and does GR(N,a,p)
+GRsim:=proc(N,a,p,K) local w,d,i,g:
+
+ w:=0:
+ d:=0:
+
+ for i from 1 to K do
+  g:=GR(N,a,p):
+  w:=w+g[1]:
+  d:=d+g[2]:
+ od:
+
+evalf(w/K),evalf(d/K):
+
+end:
+
+#PrE(N,p): inputs the max capital, and a prob. p
+#and outputs a list of length N-1 whose a-th entry is
+#the EXACT probability of exiting a winner (with N dollars)
+#provided you entered with a dollars
+PrE:=proc(N,p) local P,eq,var,i:
+
+var:={seq(P[i],i=1..N-1)}:
+eq:={seq(P[i]=p*P[i+1]+(1-p)*P[i-1],i=1..N-1)}:
+eq:=subs({P[0]=0,P[N]=1},eq):
+var:=solve(eq,var):
+
+[ seq(subs(var,P[i]),i=1..N-1)]:
+
+end:
+##end of C8.txt
+
+#TS(N): the timid strategy, only betting one dollar each time
+#regardless of your capital
+TS:=proc(N):[1$(N-1)]: end:
+
+#BoS(N): the bold strategy, making the stake as
+#high as legally possible
+BoS:=proc(N)  local i:
+[seq( min(i,N-i),i=1..N-1)]:
+end:
+
+#GRvG(N,a,p,L): Verbose version
+#simulating, verbosely, a gambler who enters
+#a casino with a dollars 
+#where the gambler follows the strategy that it
+#stakes L[c] dollars if its current capital is c
+#and at each round wins that stake with prob. p
+#and has loses it with prob. 1-p
+GRvG:=proc(N,a,p,L) local t, c,tos,stak:
+c:=a:
+
+if p<1/2 then
+ print(`You stupidly enter the casino with`, a, `dollars `):
+ print(`hoping to exit with the max`, N, `dollars `):
+elif p=1/2 then
+print(`You enter the casino with`, a, `dollars `):
+ print(`hoping to exit with the max`, N, `dollars `):
+elif p>1/2 then
+
+print(`You wisely enter the casino with`, a, `dollars `):
+ print(`hoping to exit with the max`, N, `dollars `):
+fi:
+
+for t from 1 while (c>0 and c<N) do
+
+print(` You are about to play the`, t, `-th round `):
+print(`You currently have`, c, `dollars `):
+print(`Following your strategy, you stake`, L[c], `dollars `):
+
+tos:=CT(p):
+stak:=L[c]:
+c:=c+tos*stak:
+
+ if tos=1 then
+  print(`Yea!, you won the stake of`, stak, `dollars `):
+ print(`and now you have`, c, `dollars `):
+  else
+
+ print(`Oh No!, you lost the stake of`, stak, `dollars `):
+ print(`and now you have`, c, `dollars `):
+ fi:
+ 
+ 
+
+od:
+
+t:=t-1:
+
+if c=0 then
+ print(`Ha Ha, you are now broke! Serves you right`):
+ print(`not only that, you wasted`, t, `tosses `):
+elif c=N then
+
+ print(`Congratulations you are now rich!, can you spare me`):
+ print(`some change `):
+ print( ` only that, it only took you`, t, `tosses `):
+else
+ print(`You fell asleep at the bar `):
+
+
+fi:
+
+end:
+
+#GRG(N,a,p,L): terse version
+#simulating, tersely, a gambler who enters
+#a casino with a dollars 
+#where the gambler follows the strategy that it
+#stakes L[c] dollars if its current capital is c
+#and at each round wins that stake with prob. p
+#and has loses it with prob. 1-p
+#returns
+GRG:=proc(N,a,p,L) local t, c,tos,stak:
+c:=a:
+
+
+for t from 1 while (c>0 and c<N) do
+
+
+tos:=CT(p):
+stak:=L[c]:
+c:=c+tos*stak:
+
+ 
+ 
+
+od:
+
+t:=t-1:
+
+if c=0 then
+
+RETURN(0,t):
+
+else
+
+  RETURN(1,t):
+
+fi:
+
+end:
+
+#GRsimG(N,a,p,K,L): the gamler goes to the casino K
+#times and does GRG(N,a,p,L)
+GRsimG:=proc(N,a,p,K,L) local w,d,i,g:
+
+ w:=0:
+ d:=0:
+
+ for i from 1 to K do
+  g:=GRG(N,a,p,L):
+  w:=w+g[1]:
+  d:=d+g[2]:
+ od:
+
+evalf(w/K),evalf(d/K):
+
+end:
+
+#PrEG(N,p,L): inputs the max capital, and a prob. p
+#and inputs a strategy list L, where L[c] is
+#what you stake if you currently have c dollars
+#and outputs a list of length N-1 whose a-th entry is
+#the EXACT probability of exiting a winner (with N dollars)
+#provided you entered with a dollars
+PrEG:=proc(N,p,L) local P,eq,var,i:
+
+var:={seq(P[i],i=1..N-1)}:
+
+eq:={seq(P[i]=p*P[i+L[i]]+(1-p)*P[i-L[i]],i=1..N-1)}:
+
+eq:=subs({P[0]=0,P[N]=1},eq):
+var:=solve(eq,var):
+
+[ seq(subs(var,P[i]),i=1..N-1)]:
+
+end:
+
+
+#BvsT1(N,p): decides whether Bold is better than timid
+#with prob. of winning one round being p, and N is exit capital
+BvsT1:=proc(N,p) local Wb,Wt,i:
+Wt:=PrEG(N,p,TS(N)):
+
+Wb:=PrEG(N,p,BoS(N)):
+
+min(Wb-Wt):
+end:
+#TvsB1(N,p): decides whether Bold is better than timid
+#with prob. of winning one round being p, and N is exit capital
+TvsB1:=proc(N,p) local Wb,Wt,i:
+Wt:=PrEG(N,p,TS(N)):
+
+Wb:=PrEG(N,p,BoS(N)):
+
+min(Wt-Wb):
+end:
+#BvsT(N,p): proves that for every 4<=N1<=N
+#if p<1/2
+#it is always better to bold
+
+BvsT:=proc(N,p) local N1:
+
+evalb({seq( evalb(BvsT1(N1,p) > 0), N1=4..N)}={true}):
+
+end:
+
+
+#TvsB(N,p): proves that for every 4<=N1<=N
+#it is always better to timid if p>1/2
+
+TvsB:=proc(N,p) local N1:
+
+evalb({seq( evalb(TvsB1(N1,p) > 0), N1=4..N)}={true}):
+
+end:
