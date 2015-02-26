@@ -1,0 +1,84 @@
+#Matthew Kownacki
+#February 25, Assignment hw10.txt
+#Ok to Post
+
+print("File Loaded"):
+
+
+#Problem 2
+#_______________________________________________________
+
+PGL:=proc(p,N,x)  local P,eq, var, i:
+# enter with a dollars. Probability p you win a dollar and then have a+1. Probability
+# 1-p you lose a dollar and have a-1. 
+# Probability generating function for such a process:
+
+var:={seq(P[i],i=1..N-1)}:
+eq:={seq(P[i]=(p*(P[i+1]+1)+(1-p)*(P[i-1]+1))*x,i=1..N-1)}:
+eq:=subs({P[0]=0,P[N]=x},eq):
+var:=solve(eq,var):
+
+normal([ seq(subs(var,P[i]),i=1..N-1)]):
+end:
+
+
+
+
+#Problem 3
+#_______________________________________________________
+
+IDlimit:=proc(e,x,k) local i,av,M, f:
+
+f:=e/limit(e,x=1):
+
+av:=limit(diff(f,x),x=1):
+
+M:=[av]:
+
+print("after av"):
+f:=f/x^av:
+
+
+f:=x*diff(f,x):
+for i from 2 to k do
+f:=x*diff(f,x):
+M:=[op(M),limit(f,x=1)]:
+od:
+M:
+ 
+[M[1],M[2],seq(M[i]/M[2]^(i/2),i=3..k)]:
+end:
+
+
+
+
+#Problem 4
+#________________________________________________________
+Pr4:=proc():
+print(limit(PGFL(1/2,n,2*n,x),x=1)):
+IDlimit(PGFL(1/2,n,2*n,x),x,4):
+end:
+
+
+
+#Running Pr4();
+#
+# then
+#seq(limit(%[i], n = infinity), i = 1 .. nops(%));
+#                                   4  (1/2)  309
+ #              infinity, infinity, - 6     , ---
+#                                   5         35 
+
+# so this random variable is not asymptotically normal, as the 3rd and 4th moments do not reflect those of the normal distribution
+
+
+
+
+
+
+# Class 10 stuff
+PGFL:=proc(p,n,N,x):
+-4*((-2*x*(p-1)/(1+(4*p^2*x^2-4*p*x^2+1)^(1/2)))^n*(2*x*(p-1)/(-1+(4*p^2*x^2-4*p*x^2+1)^(1/2)))^N*p-(2*x*(p-1)/(-1+(4*p^2*x^2-4*p*x^2+1)^(1/2)))^n*(-2*x*(p-1)/(1+(4*p^2*x^2-4*p*x^2+1)^(1/2)))^N*p-(-2*x*(p-1)/(1+(4*p^2*x^2-4*p*x^2+1)^(1/2)))^n*(2*x*(p-1)/(-1+(4*p^2*x^2-4*p*x^2+1)^(1/2)))^N-(-2*x*(p-1)/(1+(4*p^2*x^2-4*p*x^2+1)^(1/2)))^n*p+(2*x*(p-1)/(-1+(4*p^2*x^2-4*p*x^2+1)^(1/2)))^n*(-2*x*(p-1)/(1+(4*p^2*x^2-4*p*x^2+1)^(1/2)))^N+(2*x*(p-1)/(-1+(4*p^2*x^2-4*p*x^2+1)^(1/2)))^n*p+(-2*x*(p-1)/(1+(4*p^2*x^2-4*p*x^2+1)^(1/2)))^n-(2*x*(p-1)/(-1+(4*p^2*x^2-4*p*x^2+1)^(1/2)))^n)*p*x^2/((-1+(4*p^2*x^2-4*p*x^2+1)^(1/2))*(1+(4*p^2*x^2-4*p*x^2+1)^(1/2))*((-2*x*(p-1)/(1+(4*p^2*x^2-4*p*x^2+1)^(1/2)))^N-(2*x*(p-1)/(-1+(4*p^2*x^2-4*p*x^2+1)^(1/2)))^N))
+:
+end:
+
