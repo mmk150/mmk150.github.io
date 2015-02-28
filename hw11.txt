@@ -1,0 +1,179 @@
+#Matthew Kownacki
+#March 1, 2015 Assignment hw11.txt
+#Ok to post!
+
+#PROBLEM 1
+#________________________________________________________
+
+
+Arbi1:=proc(S0,K,r,Sd,Su,T,P,x2) local x1,CV,FVd,FVu,Gd,Gu:
+x1:=P-x2*S0:
+
+
+
+FVd:=x1*exp(r*T)+x2*Sd:
+
+FVu:=x1*exp(r*T)+x2*Su:
+
+#if the price of the stock is Sd, then the option is not excercised
+Gd:=FVd:
+#if the price of the stock is Su, then the option execrcised
+Gu:=FVu+K-Su:
+
+if (Gd>0 and Gu>=0) or (Gd>=0 and Gu>0) then
+#print([Gu,Gd]):
+return(true):
+else
+return(false):
+fi:
+
+end:
+
+
+
+
+
+
+
+#PROBLEM 2
+#________________________________________________________
+
+Goodx2:= proc(S0,K,r,Sd,Su,T,P,h) local A,i:
+
+A:=[]:
+for i from 0 by h to 1 do:
+#print(Arbi1(S0,K,r,Sd,Su,T,P,i)):
+if Arbi1(S0,K,r,Sd,Su,T,P,i)=true then
+A:=[op(A),i]:
+fi:
+
+od:
+if A = [] then
+return(A):
+else
+
+return([min(A),max(A)]):
+fi:
+end:
+
+#Goodx2(2500, 3000, 0, 2000, 4000, 1, 500, 0.1e-2); returns
+ #                        [0.334, 1.000]
+#Goodx2(2500, 3000, 0, 2000, 4000, 1, 450, 0.1e-2); returns
+ #                        [0.367, 0.900]
+#Goodx2(2500, 3000, 0, 2000, 4000, 1, 400, 0.1e-2); returns
+ #                        [0.400, 0.800]
+#Goodx2(2500, 3000, 0, 2000, 4000, 1, 200, 0.1e-2); returns
+ #                              []
+
+
+
+#PROBLEM 3
+#________________________________________________________
+
+EmpiOptionPrice:=proc(S0,K,r,Sd,Su,T,h1,h2) local i,k:
+
+for i from 0 by h2 to Su*200 do:
+if Goodx2(S0,K,r,Sd,Su,T,i,h1) =[] then
+return("Empty"):
+else
+return(i-1):
+fi:
+od:
+
+
+
+end:
+
+
+
+
+# EmpiOptionPrice(2500, 3000, 0, 2000, 4000, 1, 0.1e-2, 1);
+#                            "Empty"
+#EmpiOptionPrice(2500, 3000, .1, 2000, 4000, 1, 0.1e-2, 1);
+#                            "Empty"
+#EmpiOptionPrice(2500, 3000, .1, 2000, 4000, 1, 0.1e-2, 1);
+#                            "Empty"
+#EmpiOptionPrice(2, 3500, 0, 1000, 5000, 1, 0.1e-2, 1);
+#                               0
+
+
+#PROBLEM 4
+#________________________________________________________
+
+
+
+
+
+
+
+
+
+
+
+
+
+####Stuff from class 11####
+
+
+
+#Arbi(S0,K,r,Sd,Su,T,P,x1,x2): Inputs 
+#S0: the current price of the stock
+#K the strike price, the buyer has the OPTION
+#to by the stock at time T, paying K dollars, Sd<K<Su
+#r=interest rate yielded from saving account
+#Sd, Su the two possibilities for the price of the stock at time T
+#Unless you hate money if if it was Sd you don't excercise the option
+#T is the time after 0 when you may excercise the option
+#P is the price of option
+#x1,x2:the strategy, buy x1 Goverment bonds (with interest r) and
+#x2 units of stock (whose price is x2*S0)
+#It outputs true (if the portfolio [x1,x2] allows, with the price P, gives the seller
+#of the option riskless guarantee of profit (aka <em>arbitrage</em>),
+#nd false otherwise. It also returns, in the former case, the amount of
+#profit in each case (Sd and Su respecticely, where the option was not and was excercised respectively)
+
+Arbi:=proc(S0,K,r,Sd,Su,T,P,x1,x2) local CV,FVd,FVu,Gd,Gu:
+
+CV:=x1+x2*S0:
+
+if CV>P then
+ print(`Shame on you, you should not exceed your budget`):
+ RETURN(FAIL):
+fi:
+
+FVd:=x1*exp(r*T)+x2*Sd:
+
+FVu:=x1*exp(r*T)+x2*Su:
+
+#if the price of the stock is Sd, then the option is not excercised
+Gd:=FVd:
+#if the price of the stock is Su, then the option execrcised
+Gu:=FVu+K-Su:
+
+if (Gd>0 and Gu>=0) or (Gd>=0 and Gu>0) then
+
+true,[Gd,Gu]: 
+else
+false:
+fi:
+
+end:
+
+
+#Eco(S0,K,r,Sd,Su,T,P): Inputs 
+#S0: the current price of the stock
+#K the strike price, the buyer has the OPTION
+#to by the stock at time T, paying K dollars, Sd<K<Su
+#r=interest rate yielded from saving account
+#Sd, Su the two possibilities for the price of the stock at time T
+#Unless you hate money if if it was Sd you don't excercise the option
+#T is the time after 0 when you may excercise the option
+#P is the price of option
+#output, the cut-off price where the seller can't have
+#arbitrage, assuming he or she uses all the P dollars to
+#invest
+Eco:=proc(S0,K,r,Sd,Su,T) local x1,x2,i:
+
+
+
+end:
