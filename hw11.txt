@@ -72,9 +72,8 @@ end:
 
 EmpiOptionPrice:=proc(S0,K,r,Sd,Su,T,h1,h2) local i,k:
 
-for i from 0 by h2 to Su*200 do:
+for i from 0 by h2 to infinity do:
 if Goodx2(S0,K,r,Sd,Su,T,i,h1) =[] then
-return("Empty"):
 else
 return(i-1):
 fi:
@@ -88,28 +87,37 @@ end:
 
 
 # EmpiOptionPrice(2500, 3000, 0, 2000, 4000, 1, 0.1e-2, 1);
-#                            "Empty"
+#                            250
 #EmpiOptionPrice(2500, 3000, .1, 2000, 4000, 1, 0.1e-2, 1);
-#                            "Empty"
-#EmpiOptionPrice(2500, 3000, .1, 2000, 4000, 1, 0.1e-2, 1);
-#                            "Empty"
+#                            345
+#EmpiOptionPrice(2500, 3000, .2, 2000, 4000, 1, 0.1e-2, 1);
+#                            431
 #EmpiOptionPrice(2, 3500, 0, 1000, 5000, 1, 0.1e-2, 1);
-#                               0
+#                             1250
 
 
 #PROBLEM 4
 #________________________________________________________
 
 
+#  Let P be the price of option, x1 denote the (borrowed) amount of money in the market with interest rate r, and
+# x2 denote the shares of stock, with starting value S0. Suppose the option goes into effect at Time T
+#  So P= x1 + x2 * S0
+# Then the value V= exp(r*T)*x1 + ST*x2 
+#	Since we are in the one period binomial model, either ST is u*S0 or its d*S0 
+#	For the no arbitrage pricing the value must be equal to the payout cost so, then V=C(ST)
+#  This gives us the following equations:
+#	P=x1 + S0*x2
+#	exp(r*T)*x1 + S0*u*x2 =C(S0*u)
+#	exp(r*T)*x1 + S0*d*x2 =C(S0*d)
+#	
+#
 
+#solve({P = S0*x2+x1, exp(r*T)*x1+S0*d*x2 = C_d, exp(r*T)*x1+S0*u*x2 = C_u}, {x1,x2,P});
+#{P = (exp(r*T)*C_d-u*C_d-exp(r*T)*C_u+C_u*d)/(exp(r*T)*(d-u)), x1 = -(C_d*u-C_u*d)/(exp(r*T)*(d-u)), x2 = (C_d-C_u)/(S0*(d-u))}
 
-
-
-
-
-
-
-
+# So after factoring out an exp(r*T) in P, we reach the desired equation
+#
 
 
 ####Stuff from class 11####
