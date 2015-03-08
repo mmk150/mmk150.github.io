@@ -1,0 +1,259 @@
+#Matthew Kownacki
+#March 8, 2015 Assignment hw13.txt
+#OK to post
+
+print("File Loaded"):
+with(LinearAlgebra):
+
+#PROBLEM 1
+#_________________________________________________________________
+Prob1:=proc() local M,G,Y,MA,MB,MC,MD,GA,GB,GC,GD,YA,YB,YC,YD,D1,s0,C,r:
+r:=.03:
+
+M:= 1000:
+G:= 2000:
+Y:= 1500:
+
+MA:= 700:
+GA:=1700:
+YA:=1200:
+
+MB:=900:
+GB:=2010:
+YB:=1550:
+
+MC:=1100:
+GC:=2300:
+YC:=1600:
+
+MD:=1500:
+GD:=2800:
+YD:=1900:
+
+s0:=[M,G,Y,1]:
+D1:=[[MA,MB,MC,MD],[GA,GB,GC,GD],[YA,YB,YC,YD],[exp(.03),exp(.03),exp(.03),exp(.03)]]:
+C:=[0,50,300,800]:
+OptionPrice(s0,D1,C),HedgingPortfolio(D1,C):
+
+end:
+# Prob1() returns 418.9142416, [3.464285714, -1.428571429, -.5714285714, 668.9142427]
+
+
+
+#PROBLEM 2 (and some of problem 3)
+#_________________________________________________________________
+
+Prob2and3:=proc() local M,G,Y,MA,MB,MC,MD,GA,GB,GC,GD,YA,YB,YC,YD,D1,s0,C:
+M:= 1000:
+G:= 2000:
+Y:= 1500:
+
+MA:= 700:
+GA:=1700:
+YA:=1200:
+
+MB:=900:
+GB:=2010:
+YB:=1550:
+
+MC:=1100:
+GC:=2300:
+YC:=1600:
+
+
+MD:=1500:
+GD:=2800:
+YD:=1900:
+
+s0:=[M,G,Y,1]:
+D1:=[[MA,MB,MC,MD],[GA,GB,GC,GD],[YA,YB,YC,YD],[exp(.03),exp(.03),exp(.03),exp(.03)]]:
+C:=[0,60,500,1700]:
+print(seq(ArrowDebreu(D1,i),i=1..4)):
+return(OptionPrice(s0,D1,C),HedgingPortfolio(D1,C),Transpose(FindStateVector(s0,D1))):
+end:
+
+#Returns 1191.615761, [11.32142857, -6.142857143, -.8571428571, 3441.615767]
+#
+
+#PROBLEM 3
+#_________________________________________________________________
+
+FindStateVector:= proc(S0,D1) local v,M_d,M_di:
+v:=Vector(S0):
+M_d:= Matrix(D1):
+if Determinant(M_d)=0 then
+return(FAIL):
+else
+M_di:= MatrixInverse(M_d):
+fi:
+return(M_di.v):
+
+end:
+# The vector returned is [1.06071595627389,  1.03976307161222,  -2.54190576932335,  1.41187227494198]
+
+#PROBLEM 4
+#_________________________________________________________________
+
+ArrowDebreu:=proc(D1,i)  local M_d,M_dt,AD:
+M_d:= Matrix(D1):
+M_dt:=Transpose(M_d):
+if Determinant(M_dt) =0 then
+return(FAIL) 
+else
+AD:= MatrixInverse(M_dt):
+fi:
+
+return(AD[i]):
+
+end:
+# This returns the following vectors
+ #[ 0.110714285714285e-1,  0.357142857142851e-2,  -0.299999999999998e-1, 0.153571428571428e-1] 
+ #[ -0.714285714285710e-2,  -0.714285714285709e-2, 0.249999999999998e-1,  -0.107142857142856e-1]
+ #[ -0.285714285714287e-2, 0.714285714285713e-2, -0.499999999999997e-2, 0.714285714285700e-3] 
+ #[ 8.56071595627386, 1.03976307161218, -15.0419057693232, 6.41187227494193]
+
+#PROBLEM 5
+#_________________________________________________________________
+
+# Time to use option price to prove exercise 9 with t=0
+
+Prob5:=proc()  local Sv,D1,C,K,r,T, s0,su,sd:
+s0:=160: sd:=140: su:=200:
+K:=180: T:=0:
+#Initial price vector
+
+Sv:=[1,160]:
+#exp(r*T)=1 for T=0
+D1:=[[1,1],[200,140]]:
+#C= max(sT-K,0)
+C:=[20,0]:
+
+OptionPrice(Sv,D1,C):
+
+end:
+
+
+# Prob5() returns 20/3 
+
+#PROBLEM 6
+#_________________________________________________________________
+
+# Reading done
+
+
+
+
+#### Class 13 Stuff ####
+
+Help:=proc(): print(` FuturePossibleValuesOfPortfolio(D1,theta), HedgingPortfolio(D1,C), OptionPrice(S0,D1,C) `): end:
+
+
+#FuturePossibleValuesOfPortfolio(D1,theta): inputs a list of lists of numbers, D1, where D1 has length n, and each of
+#its components is a list of length N, where N is the number of stocks (aka as assets, aka as secutities)
+#(including, if one wishes, a Government bond)
+#and there are n possible scenarios for the future state of the economy (only treating a SINGLE period)
+#D1[i][j] is the price of stock Number i if the economy would be in state number j. 
+#It also inputs a vector theta of length N, describing the investor's portolfi, where theta[i] (1<=i<=N)
+#is the quantity he or she purchases (at time 0) of stock Number i. 
+#It outputs the vector of length n
+#whose j-th component is the future value of the portfolio if the economy is in state j (1<=j<=n)
+#Note: If one of the assets is a Government bond, the corresponding price-list would be [exp(r*T), ..., exp(r*T)]
+#where r is the interest rate, and T is the duration of the ONE step (but r and T are not inputs of this
+#abstract procedure, they are only used in applying it)
+FuturePossibleValuesOfPortfolio:=proc(D1,theta) local n,N,i,j:
+
+if not type(D1,list) or D1=[] then
+print(`bad input `):
+RETURN(FAIL):
+fi:
+
+N:=nops(D1):
+
+if not {seq(type(D1[i],list),i=1..nops(D1))}={true} then
+print(`bad input `):
+RETURN(FAIL):
+fi:
+
+
+n:=nops(D1[1]):
+
+if {seq(nops(D1[i]),i=1..N)}<>{n} then
+print(`bad input `):
+RETURN(FAIL):
+fi:
+
+
+[seq(add(D1[i][j]*theta[i],i=1..N),j=1..n)]:
+end:
+
+
+#HedgingPortfolio(D1,C): Inputs a list of lists D1 (see above), and a list C, of length n, where
+#C[j] is the amount that the seller of the option's obligation to pay the buyer of the option SHOULD the economy wind-up in state j (1<=j<=n)
+#If the seller does not meet his obligation, he is arrested. The output is the portfolio that would exactly meet his obligation
+#(but with no left-over!), in each and every one of the n possible future states of the economy
+HedgingPortfolio:=proc(D1,C) local n,N,i,j,FV,theta,eq,var:
+
+
+
+if not type(D1,list) or D1=[] then
+print(`bad input `):
+RETURN(FAIL):
+fi:
+
+N:=nops(D1):
+
+if not {seq(type(D1[i],list),i=1..nops(D1))}={true} then
+print(`bad input `):
+RETURN(FAIL):
+fi:
+
+N:=nops(D1):
+n:=nops(D1[1]):
+
+if not (type(C,list) and nops(C)=n) then
+ RETURN(FAIL):
+fi:
+
+FV:=FuturePossibleValuesOfPortfolio(D1,[seq(theta[i],i=1..N)]):
+
+if FV=FAIL then
+ RETURN(FAIL):
+fi:
+
+var:={seq(theta[j],j=1..N)}:
+eq:={seq(FV[j]=C[j],j=1..n)}:
+
+var:=solve(eq,var):
+
+if var=NULL then
+ RETURN(FAIL):
+fi:
+
+[seq(subs(var,theta[i]),i=1..N)]:
+end:
+
+
+#OptionPrice(S0,D1,C): Inputs a list S0, or length N, say, where S0[i] is today's price of stock number i,
+#D1 and C as above.
+#Outputs the fair (no arbitrage) price of an option  described by the list C, of length n, where
+#C[j] is the seller's commitment to pay the buyer if the economy is in state j, and the list  of lists D1
+#of length N, is such that D1[i][j] is the future price of stock number i IF the economy would wind-up in state number j
+OptionPrice:=proc(S0,D1,C) local HP,i:
+
+if not type(S0,list) then
+ RETURN(FAIL):
+fi:
+
+ HP:=HedgingPortfolio(D1,C):
+
+if HP=FAIL then
+ RETURN(FAIL):
+fi:
+
+if nops(HP)<>nops(S0) then
+ RETURN(FAIL):
+fi:
+
+add(S0[i]*HP[i],i=1..nops(S0)):
+
+end:

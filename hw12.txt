@@ -1,0 +1,158 @@
+#Matthew Kownacki 
+# March 8, Assignment hw12.txt
+# OK to post
+
+print("File Loaded"):
+
+Help:=proc() print(`OP2scr(S1,S2,D11,D12,D13,D21,D22,D23,r,T,C1,C2,C3)`):
+end:
+
+#PROBLEM 2
+#_____________________________________________________________
+OP2scr:=proc(S1,S2,D11,D12,D13,D21,D22,D23,r,T,C1,C2,C3)  local x1,x2,x3,eq,P,var :
+# let x2, x3 be our two stocks with everything else as described in the problem
+# our system of three equations is then the following:
+
+eq:={x1*exp(r*T)+x2*D11 + x3*D21=C1,x1*exp(r*T)+x2*D12 + x3*D22=C2, x1*exp(r*T) + x2*D13 + x3*D23=C3}:
+var:={x1,x2,x3}:
+var:=solve(eq,var):
+
+x1:=subs(var,x1):
+x2:=subs(var,x2):
+x3:=subs(var,x3):
+P:= normal(x1 + x2*S1 + x3*S2) :
+P,x2,x3:
+
+
+
+end:
+
+
+
+
+#PROBLEM 3
+#_____________________________________________________________
+
+OP2nice:=proc(S1,S2,D11,D12,D13,D21,D22,D23,r,T,C1,C2,C3) local f,q1,q2,var,eq:
+eq:={q1*(D11)+q2*(D12)+(1-q1-q2)*(D13)= exp(r*T)*(S1),q1*(D21)+q2*(D22)+(1-q1-q2)*(D23)= exp(r*T)*(S2)}:
+var:={q1,q2}:
+var:=solve(eq,var):
+
+q1:=subs(var,q1):
+q2:=subs(var,q2):
+f:=q1* exp(-r*T)*C1 + q2*exp(-r*T)*C2  + (1-q1-q2)*exp(-r*T)*C3 :
+f:=normal(f):
+
+return(f):
+
+end:
+
+#PROBLEM 4
+#_____________________________________________________________
+
+#The expected gain to the buyer of the option
+
+ExpBuyer2:=proc(S1,S2,D11,D12,D13,D21,D22,D23,r,T,C1,C2,C3) local P,f:
+P:=OP2scr(S1,S2,D11,D12,D13,D21,D22,D23,r,T,C1,C2,C3)[1]:
+f:= q1*(C1*exp(-r*T) - P) + q2*(C2*exp(-r*T)-P) + (1-q1-q2)*(C3*exp(-r*T)-P)):
+
+return(f):
+
+end:
+
+#The expected gain to the seller of the option
+ExpSeller2:=proc(S1,S2,D11,D12,D13,D21,D22,D23,r,T,C1,C2,C3) local P,f:
+P:=OP2scr(S1,S2,D11,D12,D13,D21,D22,D23,r,T,C1,C2,C3)[1]:
+f:= q1*(P-C1*exp(-r*T) ) + q2*(P-C2*exp(-r*T)) + (1-q1-q2)*(P-C3*exp(-r*T))):
+
+return(f):
+
+end:
+
+#PROBLEM 5
+#_____________________________________________________________
+
+#Tested the above with various input scenarios
+
+
+
+
+
+
+#################CLASS 12 STUFF
+
+
+OPscr:=proc(S0,u,d,r,T,Cu,Cd) local x1,x2,P,var,eq:
+
+#x1,x2 is a portfolio: x1 Goverment bonds and x2 units of stock
+#Value of the portolio if the stock went up
+#x1*exp(r*T)+x2*u*S0>=Cu
+
+#Value of the portolio if the stock went down
+#x1*exp(r*T)+x2*d*S0>=Cd
+
+eq:={x1*exp(r*T)+x2*u*S0=Cu,x1*exp(r*T)+x2*d*S0=Cd}:
+var:={x1,x2}:
+
+var:=solve(eq,var):
+
+x1:=subs(var,x1):
+x2:=subs(var,x2):
+
+P:=normal(x1+x2*S0):
+
+P,x2:
+
+end:
+
+OP:=proc(S0,u,d,r,T,Cu,Cd) local P,x2:
+P:=(exp(r*T)*Cd-Cd*u-exp(r*T)*Cu+Cu*d)/(exp(r*T)*(d-u)): 
+x2:=(Cd-Cu)/(S0*(d-u)):
+
+factor(coeff(P,Cu,1)*exp(r*T))*(exp(-r*T)*Cu)+
+factor(coeff(P,Cd,1)*exp(r*T))*(exp(-r*T)*Cd),x2:
+end:
+
+#The expected gain to the buyer of the option
+#if she believes that the probability of the stock going up is q
+ExpBuyer:=proc(S0,u,d,r,T,Cu,Cd,q) local P:
+P:=OP(S0,u,d,r,T,Cu,Cd)[1]:
+#prob. q, she would get Cu*exp(-r*T)-P
+#prob. 1-q she would get Cd*exp(-r*T)-P
+
+q*(Cu*exp(-r*T)-P)+(1-q)*(Cd*exp(-r*T)-P):
+
+end:
+
+
+
+#The expected gain to the seller of the option
+#if she believes that the probability of the stock going up is q
+#following the do nothing portoflio
+ExpSeller:=proc(S0,u,d,r,T,Cu,Cd,q) local P:
+P:=OP(S0,u,d,r,T,Cu,Cd)[1]:
+
+q*(P-Cu*exp(-r*T))+ (1-q)*(P-Cd*exp(-r*T)):
+
+end:
+
+#MM(S0,u,d,r,T,Cu,Cd): the two coefficients in front
+#of today's value of the two contingent claim
+MM:=proc(S0,u,d,r,T,Cu,Cd) local P:
+P:=(exp(r*T)*Cd-Cd*u-exp(r*T)*Cu+Cu*d)/(exp(r*T)*(d-u)): 
+
+
+[factor(coeff(P,Cu,1)*exp(r*T)),factor(coeff(P,Cd,1)*exp(r*T))]:
+end:
+
+
+#0Pnice(S0,u,d,r,T,Cu,Cd):the same as OP but using
+#the martingale property that the future price of S0
+#is the expected value of the stocks in time T
+OPnice:=proc(S0,u,d,r,T,Cu,Cd) local q:
+#q: probability of the stock going up so it has the martingale property
+q:=solve(q*u*S0+(1-q)*d*S0=exp(r*T)*S0,q):
+
+q*Cu*exp(-r*T)+(1-q)*Cd*exp(-r*T):
+
+end:
