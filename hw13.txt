@@ -135,6 +135,19 @@ end:
 
 # Prob5() returns 20/3 
 
+
+# PROBLEM 5: REDUX
+#_________________________________________________________________
+
+
+# This is the ACTUAL problem 5 that was meant to be assigned.
+
+
+prob5actual:=proc()   local C,P,t,T,K,r,S:
+end:
+
+#I will complete this sometime this week, since I usually work on these assignments during Monday and Friday afternoons. 
+
 #PROBLEM 6
 #_________________________________________________________________
 
