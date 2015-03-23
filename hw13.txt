@@ -32,7 +32,7 @@ YD:=1900:
 
 s0:=[M,G,Y,1]:
 D1:=[[MA,MB,MC,MD],[GA,GB,GC,GD],[YA,YB,YC,YD],[exp(.03),exp(.03),exp(.03),exp(.03)]]:
-C:=[0,50,300,800]:
+C:=[0,0,0,500]:
 OptionPrice(s0,D1,C),HedgingPortfolio(D1,C):
 
 end:
@@ -67,7 +67,7 @@ YD:=1900:
 
 s0:=[M,G,Y,1]:
 D1:=[[MA,MB,MC,MD],[GA,GB,GC,GD],[YA,YB,YC,YD],[exp(.03),exp(.03),exp(.03),exp(.03)]]:
-C:=[0,60,500,1700]:
+C:=[0,0,0,1000]:
 print(seq(ArrowDebreu(D1,i),i=1..4)):
 return(OptionPrice(s0,D1,C),HedgingPortfolio(D1,C),Transpose(FindStateVector(s0,D1))):
 end:

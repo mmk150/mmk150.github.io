@@ -1,0 +1,72 @@
+#Workshop Sequences
+
+#The following is meant to act as both my own notes and a supplement to those students in my Calc II recitation
+
+
+# Problem 1
+# Heres some matlab code to help you out:
+
+
+function [ output_args ] = PizzaNums( input_args )
+%UNTITLED2 Summary of this function goes here
+%   Detailed explanation goes here
+x=zeros(250);
+y=zeros(250);
+i=0;
+z_n=1;
+for i=0:249
+    y(i+1)=i;
+    x(i+1)=z_n;
+    z_n=z_n+i;
+end
+plot(x,y);
+
+
+%This is actually the simplest part
+%Its clear from the graph that z_n is quadratic(supposedly)
+% Let z_n= a*n^2 + b*n + c
+% Its clear that z_n - z_(n-1) = 2a*(n-1) + b which is linear 
+
+% We can solve for a,b,c by plugging in points. 
+% z(0) =1 -> 1= c
+% z(1) = 2 -> a+b+1=2 -> a+b=1
+% z(2) = 4 -> 4a + 2b + 1=4 -> 4a+2b=3
+% You can solve this the way you learned in highschool algebra, or use some matrix algebra to do it.
+
+% So I'm going to use some linear algebra to solve this system of equations, as I'm kind of lazy and this is quicker. 
+% Consider the (augmented) matrix whose coefficients represent our variables(and what
+% they are equal to)
+A=[1 1 1; 4 2 3];
+c=rref(A);
+display(c);
+%Information from c can be used to determine what a and b are
+% (i.e. you can glance at it and know! Think about what that means.)
+
+% Now you have the general formula.
+
+% For the case of a "two bladed pizza cutter", its pretty obvious that 
+% You merely add 2n each time(twice the cuts!). w_0=1, w_1= 2 + w_0,... w_n= 2*n + w_(n-1)
+
+% Part d is the same idea as part b), and is pretty routine "plug 'n chug" algebra. 
+% ( or linear algebra if you want to be fancy).
+
+end
+
+# Problem 2
+function [ output_args ] = ContinuedFraction( input_args )
+r_0= 2;
+i=0;
+x_0=0;
+
+for i=0:2500
+x_0= 1/(4+x0);
+r_0= 2+ x_0;
+end
+display(r_0);
+
+end
+% So this actually tends towards sqrt(5). So L=sqrt(5)
+
+
+
+# Problem 3
