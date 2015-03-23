@@ -34,6 +34,8 @@ m:=add( t^Happy(w), w in a):
 return(m):
 end:
 
+#The coefficients of P(n,t) seem to be the Catalan numbers after examining seq(P(i,t),i=1..10);
+
 
 
 #Problem 4
@@ -45,6 +47,8 @@ od:
 add( t^Happy(w), w in a):
 end:
 
+# I can't seem to figure out an explicit conjecture, but I would hazard a guess that the formula for the coefficients
+# involve binomial coefficients, as that would explain the mirror symmetry about halfway through each term. 
 
 #Problem 5 
 ## Unfortunately I could not manage to finish this before I had to leave for Boston over break
