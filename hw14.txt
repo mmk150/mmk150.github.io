@@ -1,0 +1,133 @@
+# Matthew Kownacki
+# March 15, 2015 Assignment hw14.txt
+# OK to post
+
+#Problem 1
+#Price of a euro-call option with strike price k, d<k<u
+# S0=1
+# assume zero interest rate
+PrC:=proc(d,u,k) local S0:
+S0:=1:
+# By lemma 1.3.2:
+
+(1-d)/(u-d) * (u*S0-k)  +  (u-1)/(u-d) *0:
+
+end:
+
+
+PrP:=proc(d,u,k) local i,S0:
+#Again, by lemma 1.3.2
+S0:=1:
+(1-d)/(u-d) *(0) +  (u-1)/(u-d) *(k-d*S0):
+end:
+
+
+
+
+#Problem 2
+ECB:=proc(d,u,k,q) local v:
+v:=u-k:
+return(v*q - PrC(d,u,k)):
+end:
+
+# Should be the same as the Expected loss from the ECB
+ECS:=proc(d,u,k,q)
+return(-1*ECB(d,u,k,q)):
+end:
+
+EPB:=proc(d,u,k,q) local v:
+v:= k-d:
+return((1-q)*v - PrP(d,u,k)):
+end:
+
+# Should be the same as the Expected loss from the EPB
+EPS:=proc(d,u,k,q) local v:
+return(-1*EPB(d,u,k,q)):
+end:
+
+
+#Problem 3
+# Using these four procedures we will figure out q's for which the expected gain from each of the five strategies (a)-(e) in Exercise
+# 1 of Allison Etheridge's book. 
+# With different strike prices, let the small one be k, and the larger one be called k+e, for symbolic q and e. 
+
+Prob3a:=proc(d,u,k,q,eps) 
+assume(eps>0, 0<d ,d<k,k+eps<u) :
+solve(ECB(d,u,k,q) + ECS(d,u,k+eps,q) >0,q):
+
+end:
+# When (-1+d)/(-u+d) < q
+
+Prob3b:=proc(d,u,k,q,eps) 
+assume(eps>0, 0<d ,d<k,k+eps<u) :
+solve(ECB(d,u,k,q) + ECS(d,u,k-eps,q) >0,q):
+end:
+# When q < (-1+d)/(-u+d)
+
+
+Prob3c:=proc(d,u,k,q,eps) 
+assume(0<d, d<k, k<u):
+solve(ECB(d,u,k,q) + 2*EPB(d,u,k,q) >0,q):
+end:
+
+#  q< (-1+d)/(-u + d) and 0<-2d +3k-u
+# or  q> (-1+d)/(-u + d) when -2d + 3k-u<0
+
+Prob3d:=proc(d,u,k,q,eps)
+assume(0<d, d<k, k<u):
+solve(2*ECB(d,u,k,q) + EPB(d,u,k,q) >0,q):
+end:
+
+#Likewise
+#  q< (-1+d)/(-u + d) and 0<-d +3k-2u
+# or  q> (-1+d)/(-u + d) when -d + 3k-2u<0
+
+Prob3e:=proc(d,u,k,q,eps) 
+assume(eps>0, 0<d ,d<k,k+eps<u) :
+return(solve(ECB(d,u,k,q) + EPB(d,u,k+eps,q) >0,q),solve(ECB(d,u,k+eps,q) + EPB(d,u,k,q) >0,q)):
+end:
+# q< (-1+d)/(-u + d) when 0< -d + eps + 2k -u
+# q> (-1+d)/(-u + d) when -d + eps + 2k -u <0
+
+
+
+
+#Problem 4
+#CER: the current Exchange Rate between a Dollar and a Pound,
+#FERD: the future exchange rate in case it is going to go down
+#FERU: the future exchange rate in case it is going to go up
+#u: the interest rate in the UK
+#r: the interest rate in the USA
+#T: the time for exercising
+#Pou: an amount in Pounds
+#Dol: an amount in Dollars
+
+# Outputs the fair price of an option to buy at time T, Pou pounds for Dol dollars
+PriceEO:=proc(CER,FERD,FERU,u,r,T,Pou,Dol) local a,b,p:
+a:= CER*exp(-u*T):
+b:= exp(-r*T)*(FERU*p + FERD*(1-p)):
+p:=solve(a=b,p):
+return(exp(-r*T)*p*(FERU*Pou-Dol)):
+
+end:
+
+#Problem 5
+# pdf of log-normal distr with parameters mu,sigma. Answer ex 3 of Chapter 1. (find variance and third, fourth moments about the mean.
+
+Prob5:=proc(x,mu,sig) local  m1,m2,m3,m4:
+
+lgn:=(x,mu,sig) -> 1/(x*sig*sqrt(2*Pi)) * exp(-(ln(x)-mu)^2 /(2*sig^2)):
+print(lgn(x,mu,sig)):
+
+m1:=int(x*lgn(x,mu,sig),x=0..infinity) assuming sig>0:
+m2:= int(x^2 * lgn(x,mu,sig),x=0..infinity) - m1^2 assuming sig>0:
+m3:= int((x-m1)^3 * lgn(x,mu,sig),x=0..infinity) assuming sig>0:
+m4:=int((x-m1)^4 * lgn(x,mu,sig),x=0..infinity) assuming sig>0:
+return(normal(m1),normal(m2),normal(m3),normal(m4)):
+end:
+
+# The first through fourth moments I recieved are, respectively:
+# exp((1/2)*sig^2+mu)
+# exp(2*sig^2+2*mu)-(exp((1/2)*sig^2+mu))^2
+# exp((9/2)*sig^2+3*mu)-3*exp((5/2)*sig^2+3*mu)+2*exp(3*mu+(3/2)*sig^2)
+# exp(8*sig^2+4*mu)-4*exp(5*sig^2+4*mu)+6*exp(3*sig^2+4*mu)-3*exp(2*sig^2+4*mu)

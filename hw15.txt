@@ -1,0 +1,131 @@
+#Matthew Kownacki
+# March 15, 2015 Assignment hw15.txt
+# OK to post
+
+print("File Loaded"):
+
+#Problem 1
+# reading completed
+
+#Problem 2
+# inputs a sequence of {-1,1} and outputs the numbes of placers where the partial sums are positive, or zero, but
+# The previous partial sum is positive.
+Happy:=proc(w) local i,sum,t:
+sum:= [seq(add(w[i],i=1..j),j=1..nops(w))]:
+
+if sum[1]>0 then
+t:=1:
+else
+t:=0:
+fi:
+
+for i from 1 to nops(sum)-1 do:
+if sum[i+1]>0 or (sum[i+1]=0 and sum[i]>0)then
+t:=t+1:
+fi:
+od:
+t:
+end:
+
+#Problem 3
+P:=proc(n,t) local i,sum,a,m:
+a:=AllWalks(n,n):
+m:=add( t^Happy(w), w in a):
+return(m):
+end:
+
+
+
+#Problem 4
+Q:=proc(n,t) local a,i,sum:
+a:={}:
+for i from 0 to n do:
+a:=a union AllWalks(n-i,i):
+od:
+add( t^Happy(w), w in a):
+end:
+
+
+#Problem 5 
+## Unfortunately I could not manage to finish this before I had to leave for Boston over break
+
+
+#### Class 15 Stuff
+#C15.txt, Pi Day; random walk (aka discrete Brownian motion)
+
+Help:=proc(): print(`AllWalks(n,k) , GoodWalks(n,k)`): 
+print(`PlotW(w), f(t) , g(t), a(t) `):
+end:
+
+#AllWalks(n,k): the set of ALL sequences of {1,-1}
+#whose with n 1's and k -1's
+AllWalks:=proc(n,k) local S1,S2,w:
+option remember:
+
+if n<0 or k<0 then
+RETURN({}):
+fi:
+
+if k=0 then
+RETURN({[1$n]}):
+fi:
+
+S1:=AllWalks(n-1,k):
+
+ S2:=AllWalks(n,k-1):
+
+{seq([op(w),1],w in S1),seq([op(w),-1],w in S2)}:
+end:
+
+#GoodWalks(n,k): the set of sequences of {1,-1}
+#whose partial sums is NEVER negative, with n 1's and k -1's
+GoodWalks:=proc(n,k) local S1,S2,w:
+option remember:
+
+if n<0 or k<0 then
+RETURN({}):
+fi:
+
+if k=0 then
+RETURN({[1$n]}):
+fi:
+
+
+if k>n then
+RETURN({}):
+fi:
+
+S1:=GoodWalks(n-1,k):
+
+ S2:=GoodWalks(n,k-1):
+
+{seq([op(w),1],w in S1),seq([op(w),-1],w in S2)}:
+end:
+
+#PlotW(w): plots the random walk w
+PlotW:=proc(w) local i:
+
+plot([seq([i, convert([op(1..i,w)],`+`)],i=0..nops(w))]):
+
+end:
+#f(t): the generating function for good walks (never going
+#below the x-axis) that break even (end at the x-axis)
+f:=proc(t) 
+(1-sqrt(1-4*t^2))/(2*t^2):
+end:
+
+
+#g(t): the generating function for good walks (never going
+#below the x-axis)
+g:=proc(t) 
+
+1/(1-t-t^2*f(t)):
+end:
+
+#a(t): the generating function for ALL walks
+
+a:=proc(t)
+
+simplify(1/(1-2*t^2*f(t))*(1+2*t*g(t))):
+end:
+
