@@ -1,0 +1,171 @@
+# Matthew Kownacki
+# March 25, 2015 Assignment hw16.txt
+# OK to post
+
+print("File loaded"):
+#Problem 1
+#________________________________
+
+
+
+#PO(H,r,dt,C)
+# NOTE: I did not code j in its binary representation, as I couldn't figure out how to do that and make Maple behave itself. 
+# j will represent the j'th node of the tree ( starting from the bottom) for time t=i. Since this is coded recursively 
+# and the size of C is equal to the number of nodes in the k+1'th "column" of the tree, I think this is an acceptable workaround.
+
+
+# inputs all possible stock-price histories, H is a list of size k+1 where H[i][j] is the price of the stock at time t=i 
+# if the history of downs and ups (starting at time 1) is coded by the binary representation of the integer j (j is between 0
+# meaning it was always down before time t=i, and 2^i-1, meaning it was always up), r is interest rate and dt is the duration of one time unit
+
+# inputs the list of length 2^k-1 where C[j] is the value of the claim if the history up to time t=k was coded by the integer j
+# j between 0 and k
+
+# outputs a list FC analogous to H where FC[k+1] is C and FC[i+1][j] is the value of the option at time t=i if the history up to that time is 
+# coded by j. In particular FC[1] should be a list of length 1, whose value is the fair price of the option.
+
+PO:=proc(H,r,dt,C) local FC,Su,Sd,i,k,j,s,S0,LC:
+
+k:=nops(H)-1:
+
+for j from 1 to k+1 do
+	LC[k+1][j]:= C[j]:
+od:
+
+
+
+for i from k by -1 to 1 do
+	for j from 1 to i do
+		Su:= H[i+1][j+1]:
+		Sd:= H[i+1][j]:
+		S0:=H[i][j]:
+
+
+		LC[i][j] :=  FL(S0,Sd,Su,r,dt,[LC[i+1][j],LC[i+1][j+1]])[2]:
+	od:
+od:
+
+FC:=[]:
+for i from 1 to k+1 do
+	s:=[]:
+		for j from 1 to i do
+		s:=[op(s),LC[i][j]]
+		od:
+	FC:=[op(FC),s]:
+	od:
+
+return(FC):
+end:
+
+
+
+
+#############Class 16 stuff################
+
+#FL(S0,Sd,Su,r,dt,C): inputs S0=current price of the stock
+#Sd, Su, the future price (in time dt) of the stock
+#Sd<exp(r*dt)*S0<Su, r is the risk-less interest rate
+#and dt is the duration of a time unit
+#It also inputs the pair C where
+#C[1] is what you would get if the price is Sd
+#C[2] if the price is Su
+#Outputs: a list of four items
+#The first is the risk-neutral "martingale" prob.
+#that with this the reduced expected price of the stock
+#equals today's price
+#the second item is the fair (arbitrage-free) price of
+#the option, 
+#The third item is phi, how much stock to buy in order
+#to guarantee your obligation, and the fourth item
+#is psi, how much cash in the portfolio
+FL:=proc(S0,Sd,Su,r,dt,C) local q,P,phi,psi:
+q:=(exp(r*dt)*S0-Sd)/(Su-Sd):
+
+if not (0<q and q<1) then
+ RETURN(FAIL):
+fi:
+
+P:=q*exp(-r*dt)*C[2]+ (1-q)*exp(-r*dt)*C[1]:
+
+phi:=(C[2]-C[1])/(Su-Sd):
+psi:=P-phi*S0:
+
+[q,P,phi,psi]:
+end:
+
+#FLv(S0,Sd,Su,r,dt,C): verbose version of FL (see above)
+FLv:=proc(S0,Sd,Su,r,dt,C) local q,P,phi,psi:
+q:=(exp(r*dt)*S0-Sd)/(Su-Sd):
+
+if q<0 or q>1 then
+print(`Either open a saving account or buy the stock`):
+print(`no point for options`):
+fi:
+
+print(`Just for your information (but you don't need it)`):
+print(`The so-called risk-neutral prob. of the stock going up`):
+print(` is `, q):
+
+P:=q*exp(-r*dt)*C[2]+ (1-q)*exp(-r*dt)*C[1]:
+
+print(`The fair price of the option is`, P):
+
+phi:=(C[2]-C[1])/(Su-Sd):
+psi:=P-phi*S0:
+
+print(`In order to guarantee meeting your claim you should`):
+print(`purchase`, phi, `units of stock, and`):
+
+if psi<0 then
+print(`borrow `, -psi, `dollars from the bank `):
+else
+print(`deposit `, psi, `dollars  in the bank`):
+fi:
+
+[q,P,phi,psi]:
+end:
+
+#[t,a]: t time, and a is the code-word for the sequence of #d, u in binary 
+#[t,a]->[t+1,2*a],[t+1,2*a+1]
+#generation 0 [0,0]
+#generation 1 [1,0],[1,1]
+#generation k, [k,0], ..[k, 2^k-1]
+#a stock history is a list of lists
+#[H[0],H[1],...,H[k]]
+#where H[i][j] is the price of the stock at time i 
+#with history code-word j
+
+#RandH(S0,r,dt,k,UB)
+RandH:=proc(S0,r,dt,k,UB) local H,i,j,Sc,Sd,Su:
+H[0]:=[S0]:
+
+for i from 1 to k do
+H[i]:=[]:
+
+ for j from 1 to nops(H[i-1]) do
+   Sc:=H[i-1][j]:
+
+   Sd:=rand(0..trunc(Sc*exp(r*dt))-1 )():
+   Su:=rand(trunc(Sc*exp(r*dt))+1.. UB*Sc)():
+   
+   H[i]:=[op(H[i]), Sd,Su]:
+od:
+
+od:
+
+[seq(H[i],i=0..k)]:
+
+
+
+end:
+
+
+#PO(H,r,dt,C): inputs a possible stock-price history
+#r and dt as above and C the claims at the nops(H)-1 generation
+#and outputs the respective foursome
+#[q,P,phi,psi] For every node of the tree
+P0:=proc(H,r,dt) local i,P:
+
+
+
+end:
