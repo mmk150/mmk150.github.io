@@ -1,0 +1,335 @@
+# Matthew Kownacki
+# March 29, 2015 Assignment hw17.txt
+# OK to post
+
+
+print("File loaded"):
+
+
+###Problem 1
+
+#i was a bit confused on how to approach this one, but Im pretty sure I did it right. 
+
+POgV:=proc(H, r, dt, C, A) local V,History,k,i,Alpha,a:
+V:= PO(H,r,dt,C):
+a:=A:
+k:=nops(H)-1:
+History:=[a]:
+for i from 1 to nops(H)-1 do
+
+a:=ceil(a):
+Alpha:= a mod 2 :
+
+if evalb(Alpha=1) then 
+
+a:=a+1:
+fi:
+
+ a:=a /2 :
+History:=[a,op(History)]:
+
+od:
+
+for i from 1 to k do
+S0:=H[i][1]:
+Sd:=H[i+1][2*History[i]-1]:
+Su:=H[i+1][2*History[i]]:
+Cu:=[V[i+1][2*History[i]-1],V[i+1][2*History[i]]]:
+print("For round", i , " you should do the following"):
+FLv(S0,Sd,Su,r,dt,Cu):
+
+od:
+end:
+
+#Problem 2
+#_______________________________________
+
+POgA:=proc(T,r,dt,C) local FC,Su,Sd,i,k,j,s,S0,LC:
+k:=nops(T)-1;
+for j from 1 to k+1 do
+	LC[k+1][j]:= [0 ,C[j],0,0]:
+od:
+
+for i from k by -1 to 1 do
+	for j from 1 to i do
+		Su:= T[i+1][j+1]:
+		Sd:= T[i+1][j]:
+		S0:=T[i][j]:
+
+
+		LC[i][j] :=  FL(S0,Sd,Su,r,dt,[LC[i+1][j][2],LC[i+1][j+1][2]]):
+
+	od:
+od:
+
+FC:=[]:
+for i from 1 to k+1 do
+	s:=[]:
+		for j from 1 to i do
+		s:=[op(s),LC[i][j]]
+		od:
+	FC:=[op(FC),s]:
+	od:
+
+return(FC):
+end:
+
+
+#Problem 3
+#_______________________________________
+PogCall:=proc(L,r,dt,K) local C,i:
+C:=[]:
+for i from 1 to nops(L[nops(L)]) do
+C:=[op(C), max({L[nops(L)][i] - K,0})]:
+od:
+POg(L,r,dt,C):
+
+end:
+
+PogPut:=proc(L,r,dt,K) local C,i:
+C:=[]:
+for i from 1 to nops(L[nops(L)]) do
+C:=[op(C), max({K-L[nops(L)][i] ,0})]:
+od:
+POg(L,r,dt,C):
+
+end:
+
+
+
+#Problem 4
+#_______________________________________
+
+DrawBinTg:=proc(T,r,dt,C,eps) local V,pic,k,i,j:
+V:=POgA(T,r,dt,C):
+
+k:=nops(T)-1:
+
+pic:=plot([[0,0],[k+1,0]],axes=none): 
+pic:=pic,plot([[0,0],[0,k+1]]):
+
+for i from 1 to k do
+pic:=pic,plot([[0,i],[k-i,i]]):
+od:
+
+
+for i from 1 to k do
+pic:=pic,plot([[i,0],[i,k-i]]):
+od:
+
+for i from 0 to k do
+for j from 0 to i do
+pic:=pic, textplot([i-j+eps,j+eps,T[i+1][j+1]]),textplot([i-j+2.2*eps,j+eps,V[i+1][j+1][3]],color=blue),textplot([i-j+3.3*eps,j+eps,V[i+1][j+1][2]],color=red):
+pic:=pic,plot({[i-j,j]},style=point,symbol=CIRCLE,color=black):
+od:
+od:
+
+display(pic):
+end:
+
+
+
+
+
+
+
+
+### STUFF FROM C17.txt
+
+
+
+
+#FL(S0,Sd,Su,r,dt,C): inputs S0=current price of the stock
+#Sd, Su, the future price (in time dt) of the stock
+#Sd<exp(r*dt)*S0<Su, r is the risk-less interest rate
+#and dt is the duration of a time unit
+#It also inputs the pair C where
+#C[1] is what you would get if the price is Sd
+#C[2] if the price is Su
+#Outputs: a list of four items
+#The first is the risk-neutral "martingale" prob.
+#that with this the reduced expected price of the stock
+#equals today's price
+#the second item is the fair (arbitrage-free) price of
+#the option, 
+#The third item is phi, how much stock to buy in order
+#to guarantee your obligation, and the fourth item
+#is psi, how much cash in the portfolio
+FL:=proc(S0,Sd,Su,r,dt,C) local q,P,phi,psi:
+q:=(exp(r*dt)*S0-Sd)/(Su-Sd):
+
+if not (0<q and q<1) then
+ RETURN(FAIL):
+fi:
+
+P:=q*exp(-r*dt)*C[2]+ (1-q)*exp(-r*dt)*C[1]:
+
+phi:=(C[2]-C[1])/(Su-Sd):
+psi:=P-phi*S0:
+
+[q,P,phi,psi]:
+end:
+
+#FLv(S0,Sd,Su,r,dt,C): verbose version of FL (see above)
+FLv:=proc(S0,Sd,Su,r,dt,C) local q,P,phi,psi:
+q:=(exp(r*dt)*S0-Sd)/(Su-Sd):
+
+if q<0 or q>1 then
+print(`Either open a saving account or buy the stock`):
+print(`no point for options`):
+fi:
+
+print(`Just for your information (but you don't need it)`):
+print(`The so-called risk-neutral prob. of the stock going up`):
+print(` is `, q):
+
+P:=q*exp(-r*dt)*C[2]+ (1-q)*exp(-r*dt)*C[1]:
+
+print(`The fair price of the option is`, P):
+
+phi:=(C[2]-C[1])/(Su-Sd):
+psi:=P-phi*S0:
+
+print(`In order to guarantee meeting your claim you should`):
+print(`purchase`, phi, `units of stock, and`):
+
+if psi<0 then
+print(`borrow `, -psi, `dollars from the bank `):
+else
+print(`deposit `, psi, `dollars  in the bank`):
+fi:
+
+[q,P,phi,psi]:
+end:
+
+#[t,a]: t time, and a is the code-word for the sequence of #d, u in binary 
+#[t,a]->[t+1,2*a],[t+1,2*a+1]
+#generation 0 [0,0]
+#generation 1 [1,0],[1,1]
+#generation k, [k,0], ..[k, 2^k-1]
+#a stock history is a list of lists
+#[H[0],H[1],...,H[k]]
+#where H[i][j] is the price of the stock at time i 
+#with history code-word j
+
+#RandH(S0,r,dt,k,UB)
+RandH:=proc(S0,r,dt,k,UB) local H,i,j,Sc,Sd,Su:
+H[0]:=[S0]:
+
+for i from 1 to k do
+H[i]:=[]:
+
+ for j from 1 to nops(H[i-1]) do
+   Sc:=H[i-1][j]:
+
+   Sd:=rand(0..trunc(Sc*exp(r*dt))-1 )():
+   Su:=rand(trunc(Sc*exp(r*dt))+1.. UB*Sc)():
+   
+   H[i]:=[op(H[i]), Sd,Su]:
+od:
+
+od:
+
+[seq(H[i],i=0..k)]:
+
+
+end:
+
+#due to Anthony Zaleski (you are welcome to sue Anthony
+#if you incur damage using this
+
+#PO(H,r,dt,C): (that's the letter 'O') inputs all possible stock-price histories, where H is a list of size, k+1, say, where H[i+1][j+1] 
+#is the price of the stock at time t=i if the history of downs and ups (starting at time 0) is coded by the binary 
+#representation of the integer j (j is between 0 meaning it was always down before time t=i, and 2^i-1, meaning it 
+#was always up), r is interest rate and dt is the duration of one time-unit. It also inputs the list of length 2^k-1 , 
+#where C[j+1] is the value of the claim if the history up to time t=k was coded by the integer j [j between 0 and 2^k-1, 
+#of course].
+
+#Outputs a list FC, analogous to H where FC[k+1] is C, and FC[i+1][j+1] is the value of the option at time t=i if the 
+#history, up to that time is coded by j. In particular, FC[1] should be a list of length 1, whose value is the fair 
+#price of the option. 
+
+PO:=proc(H,r,dt,C) local i,j,FC,Cu:
+FC:=[C]:
+for i from nops(H)-1 by -1 to 1 do
+	Cu:=[]:
+	for j from 1 to nops(H[i]) do
+		Cu:=[ op(Cu), FL(H[i][j],H[i+1][2*j-1],H[i+1][2*j],r,dt,[FC[1][2*j-1], FC[1][2*j]])[2] ]:
+	od:
+	FC:=[Cu, op(FC)]:
+od:
+FC:
+end:
+
+###
+
+
+
+#Outputs a list FC, analogous to H where FC[k+1] is C, and FC[i+1][j+1] is the value of the option at time t=i if the 
+#history, up to that time is coded by j. In particular, FC[1] should be a list of length 1, whose value is the fair 
+#price of the option. 
+#builds the binary tree, that at every node you have
+#the quartet [q,P,phi,psi]
+
+POg:=proc(H,r,dt,C) local i,j,FC,Cu:
+FC:=[[seq([0,C[i],0,0],i=1..nops(C))  ]]:
+for i from nops(H)-1 by -1 to 1 do
+	Cu:=[]:
+	for j from 1 to nops(H[i]) do
+
+Cu:=[ op(Cu), FL(H[i][j],H[i+1][2*j-1],H[i+1][2*j],
+r,dt,[FC[1][2*j-1][2], FC[1][2*j][2]]) ]:
+	od:
+	FC:=[Cu, op(FC)]:
+od:
+FC:
+end:
+
+#BinTm(S0,k,u,d): builds the  Binomial tree with
+#initial stock price S0, k generations, and
+#any given time the stock either went up or down by a factor
+#of u or d
+#u>1, d<1
+BinTm:=proc(S0,k,u,d) local i,j:
+[seq( [seq( S0*u^j*d^(i-j)   ,j=0..i)], i=0.. k)]:
+
+end:
+
+
+#BinTa(S0,k,u,d): builds the  Binomial tree with
+#initial stock price S0, k generations, and
+#any given time the stock either went up or down
+#by u or d
+BinTa:=proc(S0,k,u,d) local i,j:
+[seq([ seq( S0+j*u-(i-j)*d   ,j=0..i )], i=0.. k)]:
+
+end:
+
+with(plots):
+
+#DrawBinT(T,eps): draws the BINOMIAL tree T with
+#small number eps, telling you where to put the label
+DrawBinT:=proc(T,eps) local pic,k,i,j:
+k:=nops(T)-1:
+
+pic:=plot([[0,0],[k+1,0]],axes=none): 
+pic:=pic,plot([[0,0],[0,k+1]]):
+
+for i from 1 to k do
+pic:=pic,plot([[0,i],[k-i,i]]):
+od:
+
+
+for i from 1 to k do
+pic:=pic,plot([[i,0],[i,k-i]]):
+od:
+
+for i from 0 to k do
+for j from 0 to i do
+pic:=pic, textplot([i-j+eps,j+eps,T[i+1][j+1]]):
+pic:=pic,plot({[i-j,j]},style=point,symbol=CIRCLE,color=black):
+od:
+od:
+
+display(pic):
+end:
