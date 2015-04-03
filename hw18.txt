@@ -6,7 +6,7 @@
 #Reading accomplished
 
 #Problem 2
-#Will update with code this coming Friday
+
 
 
 RandDSP:=proc(k,M,U,K)
