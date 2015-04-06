@@ -1,5 +1,378 @@
 #Matthew Kownacki
 #April 1, 2015, Assignment hw19.txt
-#Ok to post
+#OK to post
+print("File Loaded!"):
 
-#This is placeholder for hw19.txt
+
+#PROBLEM 1
+#_______________________________
+
+CheckNewMartA:=proc(k,M,U,K) local New,phi,Z0,NM,i,ra:
+New:=RandMar(k,M,U,K):
+phi:=[]:
+#Just pick something between 1 and 1000
+ra:=rand(1..1000):
+
+for i from 1 to nops(New[4]) do
+
+phi:=[op(phi),ra()]:
+od:
+Z0:=ra():
+
+NM:=NewMart(New,phi,Z0):
+
+IsMartingale(NM):
+end:
+
+IsMartingale:=proc(P) local i,j, temp1,temp2:
+for i from 1 to nops(P[2]) do
+	temp1:=P[5][i]:
+
+#tried to be brief without "unpacking everything", but that resulted in the following headache
+
+	temp2:= add(P[4][i][j]*P[5][P[2][i][j]+1],j=1..nops(P[2][i])):
+
+		if not temp1=temp2 then
+	return(false):
+	fi:
+od:
+return(true):
+end:
+
+#PROBLEM 2
+#_______________________________
+
+
+CheckMart:=proc(k,M,U,K,HowMany) local i,X, truthy:
+for i from 1 to HowMany do
+truthy:=CheckMartA(k,M,U,K):
+if truthy=false then
+return(false):
+fi:
+od:
+return(truthy):
+end:
+
+
+#CheckNewMart(10,3,3,5,10) returns true
+
+
+#PROBLEM 3
+#_______________________________
+#BROKEN! I will fix this once I understand why it is broken. :( 
+#Likely someone else will have an easy fix for this, and I will be banging my head against the wall Monday morning.
+
+
+Findphi:=proc(M,X) local ems,zees,eqs,vars,sol:
+# Lets just have maple solve the system of equations for us
+ems:=M[5]:
+zees:=X[5]:
+eq:={}:
+for i from 1 to nops(zees) do:
+
+#Like in class, something is going wrong with the indexing in this formula
+# I cannot seem to puzzle out a way to fix it (I think I tried every sensible shift and restarting point), so I think I'll fool around with it a bit (a lot) later
+# To my knowledge, this should work, but I'm definitely miscommunicating something to Maple here... 
+# I seem to get the last phi at least, so that's something I suppose?
+
+eq:= eq union {zees[i]=zees[1] + add(phi[k+1]*(ems[k+1]-ems[k]),k=1..i-1)}:
+od:
+vars:={seq(phi[k+1],k=1..nops(zees)-1)}:
+sol:=solve(eq,vars):
+return([sol],zees[1]):
+
+
+end:
+
+
+
+#PROBLEM 4
+#_______________________________
+
+#Err, perhaps it was just my interpretation, but I think this can be done with some of the stuff
+# that we did in hw 17, if we just make a tree for each option consisting of the sequence of 
+# ups and downs at the ith generation of the binary tree.
+# To that end, lets just do that and throw it in what we made in hw17
+
+BSdiscreteCall:=proc(u,d,r,N,K) local L:
+L:=[seq([seq(u^j *d^(i-j) , j=0..i)],i=0..N)]:
+
+PogCall(L,r,dt,K)[1][1][2]:
+#Edit: So many nested lists, blahhhhhhh
+end:
+
+BSdiscretePut:=proc(u,d,r,N,K) local L:
+L:=[seq([seq(u^j *d^(i-j) , j=0..i)],i=0..N)]:
+PogPut(L,r,dt,K)[1][1][2]:
+#Edit: So many nested lists, blahhhhhhh
+end:
+
+#lprint(BSdiscreteCall(2,1/2,0,30,1.1));
+#[[1/3, .9358432232, .9676269980, -0.317837748e-1]]
+# So a price of .93584...
+
+#lprint(BSdiscretePut(2,1/2,0,30,1.1));
+#[[1/3, 1.035843224, -0.3237300267e-1, 1.068216227]]
+# So a price of 1.0358...
+
+# Changed above code so that it gets rid of the list output.
+
+
+#####hw17 functions and class 17 stuff
+
+PogCall:=proc(L,r,dt,K) local C,i:
+C:=[]:
+for i from 1 to nops(L[nops(L)]) do
+C:=[op(C), max({L[nops(L)][i] - K,0})]:
+od:
+POgA(L,r,dt,C):
+
+end:
+
+PogPut:=proc(L,r,dt,K) local C,i:
+C:=[]:
+for i from 1 to nops(L[nops(L)]) do
+C:=[op(C), max({K-L[nops(L)][i] ,0})]:
+od:
+POgA(L,r,dt,C):
+
+end:
+
+#C17 function 
+
+POg:=proc(H,r,dt,C) local i,j,FC,Cu:
+FC:=[[seq([0,C[i],0,0],i=1..nops(C))  ]]:
+for i from nops(H)-1 by -1 to 1 do
+	Cu:=[]:
+print("Not in first loop?"):
+	for j from 1 to nops(H[i]) do
+print("Calling from second loop"):
+Cu:=[ op(Cu), FL(H[i][j],H[i+1][2*j-1],H[i+1][2*j],
+r,dt,[FC[1][2*j-1][2], FC[1][2*j][2]]) ]:
+	od:
+	FC:=[Cu, op(FC)]:
+od:
+FC:
+end:
+
+POgA:=proc(T,r,dt,C) local FC,Su,Sd,i,k,j,s,S0,LC:
+k:=nops(T)-1;
+for j from 1 to k+1 do
+	LC[k+1][j]:= [0 ,C[j],0,0]:
+od:
+
+for i from k by -1 to 1 do
+	for j from 1 to i do
+		Su:= T[i+1][j+1]:
+		Sd:= T[i+1][j]:
+		S0:=T[i][j]:
+
+
+		LC[i][j] :=  FL(S0,Sd,Su,r,dt,[LC[i+1][j][2],LC[i+1][j+1][2]]):
+
+	od:
+od:
+
+FC:=[]:
+for i from 1 to k+1 do
+	s:=[]:
+		for j from 1 to i do
+		s:=[op(s),LC[i][j]]
+		od:
+	FC:=[op(FC),s]:
+	od:
+
+return(FC):
+end:
+
+FL:=proc(S0,Sd,Su,r,dt,C) local q,P,phi,psi:
+q:=(exp(r*dt)*S0-Sd)/(Su-Sd):
+
+if not (0<q and q<1) then
+ RETURN(FAIL):
+fi:
+
+P:=q*exp(-r*dt)*C[2]+ (1-q)*exp(-r*dt)*C[1]:
+
+phi:=(C[2]-C[1])/(Su-Sd):
+psi:=P-phi*S0:
+
+[q,P,phi,psi]:
+end:
+
+#### STUFF FROM CLASS 19
+
+
+
+####old stuff
+#C18.txt: March  30, 2015
+#general discrete martingales
+
+Help18:=proc(): print(`RandTree(k,M), RandLD(f,M), RandMar(k,M,U,K)`): end: 
+
+#RandTree(k,M): a random tree with k generations
+#where each vertex may have from 0 to M children
+#it returns 
+#[NumberOfVertices, ListOfListOfChildren,ListOfGenerations]
+#T[i]: the list (from youngest to oldest of the children
+#of vertex i
+RandTree:=proc(k,M) local ra,T,co,G,v,NuC,i,i1:
+co:=0:
+
+ra:=rand(1..M):
+
+G[0]:={0}:
+
+for i from 1 to k do
+ G[i]:={}:
+ for v in G[i-1] do 
+    NuC:=ra():
+  T[v]:=[seq(co+i1,i1=1..NuC)]:
+  co:=co+NuC:
+   G[i]:=G[i] union {op(T[v])}:
+ od:
+ od:
+
+
+
+
+[co+1,[seq(T[v],v=0..co-nops(G[k]))],[seq(G[v],v=0..k)]]:
+
+end:
+
+#RandLD(f,K): generates a random loaded die
+#in other words a list of length f of
+#numbers between 0 and 1 that add up to 1
+#by first picking a random list of positive integer
+RandLD:=proc(f,K) local ra,i,q,su:
+ra:=rand(1..K):
+
+q:=[seq(ra(),i=1..f)]:
+su:=convert(q,`+`):
+[seq(q[i]/su,i=1..nops(q))]:
+end:
+
+#RandMar(k,M,U,K): generates a random martingale
+#on a random tree with k generations and
+#nu. of children from 1 to M, and integer
+#values of  youngest generation from 0 to U
+#It returns the triple for the tree
+#[NuVertices,ListOfListOfChildren,ListOfGenerations]
+#followed by the list of probability distrubtions for each non-leaf
+#followed by the values of  a discrete stochastic process that us a martingale
+RandMar:=proc(k,M,U,K) local T,q,NuV,C,G,NonLeaves,Mar,ra,KH,LD,v,i,j:
+T:=RandTree(k,M):
+ra:=rand(1..U):
+NuV:=T[1]:
+
+C:=T[2]:
+G:=T[3]:
+
+NonLeaves:= {seq(op(G[i]),i=1..nops(G)-1)}:
+
+for v in NonLeaves do
+ q[v]:=RandLD( nops(C[v+1]) , K ):
+od:
+
+
+for v in G[nops(G)] do
+ Mar[v]:=ra():
+od:
+
+
+for i from k by -1 to 1  do
+
+ for v in G[i] do
+
+  KH:=C[v+1]:
+  LD:=q[v]:
+    
+  Mar[v]:=add(LD[j]*Mar[KH[j]],j=1..nops(LD)):
+
+ od:
+od:
+
+[op(T), [seq(q[i],i=0..nops(NonLeaves)-1)]  , [seq(Mar[i],i=0..NuV-1)] ]:
+end:
+
+####end old stuff
+#ParentList(M)Pa: inputs a discrete stochastic process M
+#and outputs the list,P, of length of M[1]-1
+#such that P[i] is the unique parent of vertex i
+ParentList:=proc(M) local P,C,j,NuNR,c:
+NuNR:=M[1]-1:
+C:=M[2]:
+
+for j from 1 to nops(C) do
+ for c in C[j] do
+  P[c]:=j-1:
+ od:
+od:
+
+[seq(P[j],j=1..NuNR)]:
+
+end:
+
+
+
+#NewMart1(M,phi,Z0,n)
+#Inputs a discrete martingale
+#[NuVertices,ListOfChildren,ListOfGenerations,q,X]
+#phi a "predictable" ( a function defined on internal vertices)
+#and Z0, the value of the new martingale at 0 (the top)
+#outputs the value of brand-new martingale with the same vertices
+#and the same prob. distibution but different values
+#at vertex
+NewMart1:=proc(M,phi,Z0,n) local X,NuV,C,path,P,cu:
+NuV:=M[1]:
+C:=M[2]:
+X:=M[5]:
+
+if nops(C)<>nops(phi) then
+ RETURN(FAIL):
+fi:
+
+if n<0 or n>NuV-1 then
+ RETURN(FAIL):
+fi:
+
+path:=[n]:
+
+P:=ParentList(M):
+cu:=n:
+
+while cu<>0 do
+cu:=P[cu]:
+path:=[cu,op(path)]:
+od:
+
+
+
+Z0+add(phi[path[j+1]+1]*(X[path[j+2]+1]-X[path[j+1]+1]),
+j=0..nops(path)-2):
+
+end:
+
+
+
+
+#NewMart(M,phi,Z0)
+#Inputs a discrete martingale
+#[NuVertices,ListOfChildren,ListOfGenerations,q,X]
+#phi a "predictable" ( a function defined on internal vertices)
+#and Z0, the value of the new martingale at 0 (the top)
+#outputs the brand-new martingale with the same vertices
+#and the same prob. distibution but different values
+NewMart:=proc(M,phi,Z0) local n:
+
+if nops(M[2])<>nops(phi) then
+ RETURN(FAIL):
+fi:
+[op(1..4,M), [seq(NewMart1(M,phi,Z0,n),n=0..M[1]-1)] ]:
+
+
+end:
+
+
+
+

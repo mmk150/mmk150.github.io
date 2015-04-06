@@ -2,29 +2,67 @@
 #March 31, 2015, Assignment hw18.txt
 #Ok to post
 
+print("File Loaded!"):
 #Problem 1
 #Reading accomplished
 
 #Problem 2
+#_____________________________________
+
+# RandDSP(k,M,U,K) that generates a random Discrete-time Stochastic process. The inputs is the same as RandMar(k,M,U,K), but the last component of the output is not (necessarily) a martingale.
+RandDSP:=proc(k,M,U,K) local Tree, n,w, Kids, Gens,Root,ra,r,q,i,l,Mar,L1,L2:
+Tree:=RandTree(k,M):
+n:=Tree[1]:
+Kids:=Tree[2]:
+Gens:=Tree[3]:
+ra:=rand(1..1000):
+Root:={seq(op(Gens[l]),l=1..nops(Gens)-1)}:
+# Are the roots what we should call what we want? Or nonleaves? I'm not sure. Perhaps a question of vocabulary, oh well..
+# Root is shorter, at least :)
+
+for r in Root do:
+q[r]:=RandLD(nops(Kids[r+1]),K):
+od:
 
 
+for r in Gens[nops(Gens)] do
+Mar[r]:=ra():
+od:
+#print(Mar):
+#print(Gens):
+for i from k to 1 by -1 do
+	for w in Gens[i] do
+	Mar[w]:=ra():
+	od:
+od:
 
-RandDSP:=proc(k,M,U,K)
+L1:=[seq(q[i],i=0..nops(Root)-1)]:
+L2:=[seq(Mar[i],i=0..n-1)]:
 
-
-
-
+return([op(Tree),L1,L2]):
 end:
 
 
-IsMartingale:=proc(P)
+IsMartingale:=proc(P) local i,j, temp1,temp2:
+for i from 1 to nops(P[2]) do
+	temp1:=P[5][i]:
 
+#tried to be brief without "unpacking everything", but that resulted in the following headache
 
+	temp2:= add(P[4][i][j]*P[5][P[2][i][j]+1],j=1..nops(P[2][i])):
 
+		if not temp1=temp2 then
+	return(false):
+	fi:
+od:
+return(true):
 end:
+
+# I tested the above with RandDSP and RandMar and it seems to be working correctly.
 
 #Problem 3
 #Reading accomplished.
+
 
 
 ## Stuff from class 18###
