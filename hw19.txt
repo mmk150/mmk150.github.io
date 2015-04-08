@@ -59,6 +59,12 @@ end:
 
 #PROBLEM 3
 #_______________________________
+
+# EDIT: 4/7/15
+
+# I was not being resourceful enough, we have to tell phi and z where to go through the possible paths so we can solve the system.
+
+
 #BROKEN! I will fix this once I understand why it is broken. :( 
 #Likely someone else will have an easy fix for this, and I will be banging my head against the wall Monday morning.
 
@@ -67,7 +73,19 @@ Findphi:=proc(M,X) local ems,zees,eqs,vars,sol:
 # Lets just have maple solve the system of equations for us
 ems:=M[5]:
 zees:=X[5]:
-eq:={}:
+
+path:=[n]:
+
+P:=ParentList(M):
+cu:=n:
+
+while cu<>0 do
+cu:=P[cu]:
+path:=[cu,op(path)]:
+od:
+
+
+
 for i from 1 to nops(zees) do:
 
 #Like in class, something is going wrong with the indexing in this formula
@@ -75,7 +93,7 @@ for i from 1 to nops(zees) do:
 # To my knowledge, this should work, but I'm definitely miscommunicating something to Maple here... 
 # I seem to get the last phi at least, so that's something I suppose?
 
-eq:= eq union {zees[i]=zees[1] + add(phi[k+1]*(ems[k+1]-ems[k]),k=1..i-1)}:
+eq:= eq union {zees[i]=zees[1] + add(phi[path[k+1]+1]*(ems[path[k+2]+1]-ems[path[k+1]+1]),k=1..i-1)}:
 od:
 vars:={seq(phi[k+1],k=1..nops(zees)-1)}:
 sol:=solve(eq,vars):

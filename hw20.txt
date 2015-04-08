@@ -1,0 +1,144 @@
+#Matthew Kownacki
+# April 7, 2015 Assignment hw20.txt
+# OK to post
+print("File Loaded"):
+
+#PROBLEM 1
+#__________________________
+# This problem was surpisingly really fun to do for all it's simplicity!
+
+V(S,t):=proc() local f,V,r,sig,S,K,T,t:
+f:=BSsym(S,sig,r,T,K):
+V:=subs(T=T-t,f):
+
+evalb(normal(diff(V,t) + .5* sig^2 * S^2 * diff(V,S,S) + r*S*diff(V,S)-r*V)=0):
+
+end:
+
+
+#PROBLEM 2
+#__________________________
+
+prob2:=proc() local i:
+
+for i from 200 by 10 to 1000 do
+print(BSsym(100,.1,0,1,90),"equals(ish)?" ,BS(100,1,.1,0,1,i,90)):
+od:
+
+end:
+
+
+# I am sufficiently convinced
+
+#PROBLEM 3
+#_________________________
+#Reading accomplished!
+
+### Class 20 Stuff
+
+PHI:=proc(x) local z:
+
+int(exp(-z^2/2)/sqrt(2*Pi),z=-infinity..x):
+
+end:
+
+
+CheckCLT:=proc(N,k,p) local i:
+evalf(add(binomial(N,i)*p^i*(1-p)^(N-i),i=0..k)/
+PHI(BinToN1(N,k,p))):
+end:
+
+#BinToN1(N,k,p)BinToN1(N,k,p): the argument of 
+#PHI, NORMAL apprx. to the Binomial
+#Dist. Bin(N,p) using PHI
+BinToN1:=proc(N,k,p) local x:
+#Exp=N*p, s.d. sqrt(N*p*(1-p)):
+(k-N*p)/sqrt(N*p*(1-p)):
+end:
+
+#BS(S,nu,sig,r,T,N,K): the discrete approximation
+#to the fair price of a European Call option
+#where S=initial stock price
+#nu=drift (it should appear at the limit as N goes to infinity)
+#sig=volatility (how risky it is)
+#r=interest rate (compounded cont.)
+#T=time of maturity 
+#N=number of time periods (the larger N the better approximation)
+#K=strike price (the buyer of the option would excercise
+#the option if the price of the stock T is larger than K
+#and make K-S_T . Of course if it is less he would be
+#stupid to exercise it, since he would lose money
+BS:=proc(S,nu,sig,r,T,N,K) local u,d,dt,p,k,k0:
+
+dt:=T/N:
+
+d:=exp(nu*dt-sig*sqrt(dt)):
+d:=evalf(d):
+
+u:=exp(nu*dt+sig*sqrt(dt)):
+u:=evalf(u):
+#p: the martingale (no arbitrage prob.) with the above u and d
+#p is the prob. of going DOWN (so 1-p is the prob. of going
+#up)
+
+p:=(u-exp(r*dt))/(u-d):
+
+p:=evalf(p):
+
+#k0=be the cut-off
+#add(binomial(N,k)*p^k*(1-p)^(N-k)*(S*d^k*u^(N-k)-K)
+#     ,k=0..k0)*exp(-r*T):
+#
+#cut-off k0 is a solution of 
+#S*d^k*u^(N-k)-K=0
+k0:=solve(S*d^k*u^(N-k)-K=0,k);
+
+
+k0:=trunc(evalf(k0)):
+
+
+
+add(binomial(N,k)*p^k*(1-p)^(N-k)*(S*d^k*u^(N-k)-K)
+     ,k=0..k0)*exp(-r*T):
+
+end:
+
+
+#BSsym(S,sig,r,T,K): Maple deriving rigorously
+#the famous B-S formula
+BSsym:=proc(S,sig,r,T,K) local nu,N,u,d,dt,p,k,k0,gu:
+
+dt:=T/N:
+
+d:=exp(nu*dt-sig*sqrt(dt)):
+
+
+u:=exp(nu*dt+sig*sqrt(dt)):
+
+#p: the martingale (no arbitrage prob.) with the above u and d
+#p is the prob. of going DOWN (so 1-p is the prob. of going
+#up)
+
+p:=(u-exp(r*dt))/(u-d):
+
+
+
+#k0=be the cut-off
+#add(binomial(N,k)*p^k*(1-p)^(N-k)*(S*d^k*u^(N-k)-K)
+#     ,k=0..k0)*exp(-r*T):
+#
+#cut-off k0 is a solution of 
+#S*d^k*u^(N-k)-K=0
+k0:=solve(S*d^k*u^(N-k)-K=0,k);
+
+#add(binomial(N,k)*p^k*(1-p)^(N-k)*(S*d^k*u^(N-k)-K)
+#     ,k=0..k0)*exp(-r*T)=
+#=S*add(binomial(N,k)*(p*d)^k*((1-p)*u)^(N-k)
+#     ,k=0..k0)*exp(-r*T):
+#-K*add(binomial(N,k)*p^k*(1-p)^(N-k)
+ #    ,k=0..k0)*exp(-r*T)
+
+gu:=normal([limit(BinToN1(N,k0,p),N=infinity), limit(BinToN1(N,k0,p*d),N=infinity)]):
+S*PHI(gu[2])-K*exp(-r*T)*PHI(gu[1]):
+
+end:
