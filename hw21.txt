@@ -1,0 +1,139 @@
+#Matthew Kownacki
+# April 10, 2015 Assignment hw21.txt
+# OK to post
+print("File Loaded"):
+
+Help:=proc(): print(`Tab(B,N,a,b), Check335(a,b,N,theta,M), Check334(a,x,t0,N,M) `): end:
+#PROBLEM 1
+#______________________________
+#Tab(B,N,a,b) finds the first time B(t,N) meets the  line x=a+b*t
+
+Tab:=proc(B,N,a,b) local y, dt,dx,i,a1:
+ dt:=1/N: dx:=sqrt(dt):  
+ y:= t->a + b*t:
+if  evalf(y(0))<evalf(B[1][2] )then
+  for i from 1 to nops(B) while evalf(B[i][2])>y(B[i][1]) do  od:
+else 
+for i from 1 to nops(B) while evalf(B[i][2])<y(B[i][1]) do  od:
+fi:
+ 
+ if i=nops(B)+1 then
+      FAIL:
+   else
+     i*dt:
+  fi:
+ 
+   
+ end:  
+
+ 
+
+#PROBLEM 2
+#______________________________
+Check335:=proc(a,b,N,theta,M) local i,j,Stop,W,sum:
+sum:=0:
+
+for i from 1 to M do:
+W:=Bt(20,N):
+Stop:=Tab(B,N,a,b):
+if Stop = FAIL then
+Stop:=inf:
+sum:=sum + 0:
+
+else
+sum:=sum+ exp(- theta * Stop):
+fi:
+#print(i):
+od:
+sum:=sum/M:
+print(evalf(sum), "equal(ish)?", evalf(exp(-a*(b+sqrt(b^2 + 2*theta))))):
+
+
+end:
+# Seems to get pretty close with most of the values I test, but some don't get pretty close...
+
+
+#PROBLEM 3
+#______________________________
+Check334:=proc(a,x,t0,N,M) local i,j,W,L,Max,sum,ver,Condition:
+sum:=0:
+for i from 1 to M do:
+W:=Bt(t0,N):
+L:={seq(W[j][2],j=1..nops(W))}:
+Max:= evalf(max(L)):
+Condition:= evalb( Max>=a and evalf(W[nops(W)][2] )<= x):
+
+if Condition then
+sum:=sum+1:
+fi:
+
+od:
+sum:=sum/M:
+ver:=1- PHI( (2*a -x)/sqrt(t0)): 
+print( evalf(sum), "equals(ish)?", evalf(ver));
+end:
+
+# This seems to work fine after testing (and better than the other one too, at that!)
+
+### CLASS 21 STUFF
+
+ra:=proc(): 2*rand(0..1)()-1: end:  
+
+  #Bt(t,N): A sample Brownian path of duration t
+  #with N big, dt=1/N, dx=sqrt(dt) (N should a perfect square)
+  Bt:=proc(t,N) local dt,dx,i,j,P:
+  dt:=1/N:
+  dx:=sqrt(dt):
+  P:=[seq(ra(),i=1..t*N)]:
+  P:=[seq(add(P[j],j=1..i),i=1..nops(P))]:
+  P:=[seq([i*dt,P[i]*dx],i=1..nops(P))]:
+
+
+  end:
+  
+  #ExpP(F,B,t,N,M,t0): apprximates the Expected value of the
+  #Stochastic process F(B,t), where F is any function
+  #of B and t ,  using dt=1/N, at time t0 by simulation
+  #M times
+  ExpP:=proc(F,B,t,N,M,t0) local i:
+
+   evalf(add(subs({t=t0,B=Bt(t0,N)[t0*N][2]}  ,F) , i=1..M)/M):
+  end:
+  
+ #Ta(B,N,a): inputs a Brownian sample path, N a perfect square
+ #dt=1/N, and a "real" number a, and outputs the FIRST time
+ #the value of B is a 
+ Ta:=proc(B,N,a) local dt,dx,i,a1:
+ dt:=1/N: dx:=sqrt(dt):  
+ a1:=trunc(a/dx)*dx:
+
+  for i from 1 to nops(B) while B[i][2]<>a1 do od:
+ 
+ if i=nops(B)+1 then
+      FAIL:
+   else
+     i*dt:
+  fi:
+ 
+   
+ end:  
+
+  #Ref(B,N,T): inputs a sample Brownian path with dt=1/N
+  #and a time, outputs the new sample path, obtained
+  #by reflecting the part after T with respect to x=B[T][2]
+   #WT-(B[j][2]-WT)
+  Ref:=proc(B,N,T) local dx,dt,i,WT,j:
+  dt:=1/N: 
+  dx:=sqrt(dt):
+   i:=trunc(T/dt):
+   WT:=B[i][2]:
+   [op(1..i,B), seq([B[j][1], 2*WT-B[j][2]], j=i+1..nops(B))]:
+ end:
+
+### PHI function from class 20
+PHI:=proc(x) local z:
+
+int(exp(-z^2/2)/sqrt(2*Pi),z=-infinity..x):
+
+end:
+
