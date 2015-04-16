@@ -1,0 +1,79 @@
+#Matthew Kownacki
+# April 13, 2015 Assignment hw22.txt
+# OK to post
+print("File Loaded"):
+
+Help:=proc(): print(`MyTaylor(f,x,a,N) ,Taylor2Start(f,x,y,h,k,N) ,ExpWtr(t,r) `): end:
+
+#PROBLEM 1
+#_________________________
+#Taylor series of function f, in variable x, centered at a, out to N terms. 
+MyTaylor:=proc(f,x,a,N):
+taylor(f,x=a,N):
+end:
+
+# The tested functions behaved as expected at their expansion points
+
+#PROBLEM 2
+#_________________________
+
+Taylor2Start:=proc(f,x,y,h,k,N) local g:
+g:=subs({x=x+h,y=y+h},f):
+#print(g):
+mtaylor(g,{x,y},N):
+end:
+
+# lprint(Taylor2Start(exp(x+y+x*y),x,y,h,k,3)); yields
+# exp(h^2+2*h)+exp(h^2+2*h)*(h+1)*x+exp(h^2+2*h)*(h+1)*y+exp(h^2+2*h)*(1/2+(1/2)*h^2+h)*x^2+exp(h^2+2*h)*(h^2+2*h+2)*x*y+exp(h^2+2*h)*(1/2+(1/2)*h^2+h)*y^2
+
+#lprint(Taylor2Start(f(x,y),x,y,h,k,3));
+#f(h, h)+(D[1](f))(h, h)*x+(D[2](f))(h, h)*y+(1/2)*(D[1, 1](f))(h, h)*x^2+(D[1, 2](f))(h, h)*x*y+(1/2)*(D[2, 2](f))(h, h)*y^2
+
+
+#PROBLEM 3
+#__________________________
+
+ExpWtr:=proc(t,r) local EW,S, EZ:
+
+# So as not to kill the sum r=0: 1
+if r=0 then return(1) fi:
+# But expectation at r=1 should be 0 since its a martingale and we arent expected to go anywhere
+if r=1 then return(0) fi:
+
+#if r=4 then return(3*s^2) should happen by the example: checkin:
+EZ:= r*(r-1) * 1/2 *int(ExpWtr(S,r-2),S=0..t):
+
+end:
+# After working off examples, and going through it, i'd conjecture we go to  (r-1)*(r-3)*(r-5)*... (1) * r^(t/2)
+# Since iteratively we should get the t/2 r's from going up from r=1, and integrating, and the rest is just a constant producting in from the iteration process.
+ 
+
+#PROBLEM 4
+#____________________________
+
+Ints:=proc(f,s,B,B0,t0,N) local i,sum,f_0:
+
+f_0:= subs({B=0,s=0},f):
+sum:= add(
+subs({s=i*dt,B=B0[i][2]},f) * (1/N)
+, i=1..t0*N):
+f_0*(1/N) +sum:
+
+end:
+
+
+
+#PROBLEM 5
+#____________________________
+IntW:=proc(f,s,B,B0,t0,N) local i,sum,f_0:
+#Same thing except now "dt" (which was 1/N) is now difference in values in the process.
+#Do that, bump the index up to account for the first guy, and voila.
+
+f_0:= subs({B=0,s=0},f):
+sum:= add(
+subs({s=i*dt,B=B0[i][2]},f) * (B0[i][2] - B0[i-1][2])
+, i=2..t0*N):
+f_0 * (B0[1][2])  +sum:
+
+end:
+
