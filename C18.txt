@@ -1,0 +1,98 @@
+#C18.txt: March  30, 2015
+#general discrete martingales
+
+Help:=proc(): print(`RandTree(k,M), RandLD(f,M), RandMar(k,M,U,K)`): end: 
+
+#RandTree(k,M): a random tree with k generations
+#where each vertex may have from 0 to M children
+#it returns 
+#[NumberOfVertices, ListOfListOfChildren,ListOfGenerations]
+#T[i]: the list (from youngest to oldest of the children
+#of vertex i
+RandTree:=proc(k,M) local ra,T,co,G,v,NuC,i,i1:
+co:=0:
+
+ra:=rand(1..M):
+
+G[0]:={0}:
+
+for i from 1 to k do
+ G[i]:={}:
+ for v in G[i-1] do 
+    NuC:=ra():
+  T[v]:=[seq(co+i1,i1=1..NuC)]:
+  co:=co+NuC:
+   G[i]:=G[i] union {op(T[v])}:
+ od:
+ od:
+
+
+
+
+[co+1,[seq(T[v],v=0..co-nops(G[k]))],[seq(G[v],v=0..k)]]:
+
+end:
+
+#RandLD(f,K): generates a random loaded die
+#in other words a list of length f of
+#numbers between 0 and 1 that add up to 1
+#by first picking a random list of positive integer
+RandLD:=proc(f,K) local ra,i,q,su:
+ra:=rand(1..K):
+
+q:=[seq(ra(),i=1..f)]:
+su:=convert(q,`+`):
+[seq(q[i]/su,i=1..nops(q))]:
+end:
+
+#RandMar(k,M,U,K): generates a random martingale
+#on a random tree with k generations and
+#nu. of children from 1 to M, and integer
+#values of  youngest generation from 0 to U
+#It returns the triple for the tree
+#[NuVertices,ListOfListOfChildren,ListOfGenerations]
+#followed by the list of probability distrubtions for each non-leaf
+#followed by the values of  a discrete stochastic process that us a martingale
+RandMar:=proc(k,M,U,K) local T,q,NuV,C,G,NonLeaves,Mar,ra,KH,LD,v,i,j:
+T:=RandTree(k,M):
+ra:=rand(1..U):
+NuV:=T[1]:
+
+C:=T[2]:
+G:=T[3]:
+
+NonLeaves:= {seq(op(G[i]),i=1..nops(G)-1)}:
+
+for v in NonLeaves do
+ q[v]:=RandLD( nops(C[v+1]) , K ):
+od:
+
+
+for v in G[nops(G)] do
+ Mar[v]:=ra():
+od:
+
+
+for i from k by -1 to 1  do
+
+ for v in G[i] do
+
+  KH:=C[v+1]:
+  LD:=q[v]:
+    
+  Mar[v]:=add(LD[j]*Mar[KH[j]],j=1..nops(LD)):
+
+ od:
+od:
+
+[op(T), [seq(q[i],i=0..nops(NonLeaves)-1)]  , [seq(Mar[i],i=0..NuV-1)] ]:
+end:
+
+
+
+
+
+
+
+
+

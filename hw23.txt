@@ -1,0 +1,233 @@
+#Matthew Kownacki
+# April 18, 2015, Assignment hw23.txt
+# Ok to post
+
+print("File loaded"):
+
+
+#PROBLEM 1
+#____________________________
+
+ExpftW:=proc(f,t,Wt,t0,N,M) local sum,i,g,h,B:
+sum:=0: g:= subs(t=t0,f):
+for i from 1 to M do:
+B:=Bt(t0,N):
+
+h:=subs(Wt=B[nops(B)][2],g):
+sum:=sum+h:
+od:
+sum:=sum/M:
+evalf(sum):
+end:
+
+#PROBLEM 2
+#____________________________
+
+ExpInts:=proc(f,s,B,B0,t0,N,M) local sum,i,W:
+sum:=0: 
+for i from 1 to M do:
+W:=Bt(t0,N):
+sum:=sum+ Ints(f,s,B,W,t0,N):
+od:
+sum:=sum/M:
+evalf(sum):
+end:
+
+
+#PROBLEM 3
+#____________________________
+
+
+ExpIntW:=proc(f,s,B,B0,t0,N) local sum,i,W:
+sum:=0: 
+for i from 1 to M do:
+W:=Bt(t0,N):
+sum:=sum+ IntW(f,s,B,W,t0,N):
+od:
+sum:=sum/M:
+evalf(sum):
+end:
+
+
+#PROBLEM 4
+#____________________________
+
+CheckIto:=proc(f,s,Wt,B0,t0,N,M)  local a,b,i1,i2,i3,vars1,B,sum:
+#Going by Ito's formula as written in the Etheridge book
+vars1:={s=0,Wt=0}:
+a:=ExpftW(f,s,Wt,t0,N,M):
+b:= subs(vars1,f):
+i1:= ExpIntW(diff(f,Wt),s,B,Wt,t0,N,M):
+i2:= ExpInts(diff(f,s),s,B,Wt,t0,N,M):
+i3:= 1/2 * ExpInts(diff(f,Wt,Wt),s,B,Wt,t0,N,M):
+sum:=i1+i2+i3:
+sum:=evalf(sum):
+
+print( evalf(a-b), "equals(ish)?", sum):
+end:
+
+#PROBLEM 5
+#____________________________
+
+
+#Formula on p89 (proved?):
+#lprint(Ito(f(t, S0*exp(nu*t+sigma*Wt)), t, St)); returns
+#[(D[2](f))(t, S0*exp(Wt*sigma+nu*t))*S0*sigma*exp(Wt*sigma+nu*t), 
+#(D[1](f))(t, S0*exp(Wt*sigma+nu*t))+(D[2](f))(t, S0*exp(Wt*sigma+nu*t))*S0*nu*exp(Wt*sigma+nu*t)+(1/2)*(D[2, 2](f))(t, S0*exp(Wt*sigma+nu*t))*S0^2*sigma^2*exp(2*Wt*sigma+2*nu*t)+(1/2)*(D[2](f))(t, S0*exp(Wt*sigma+nu*t))*S0*sigma^2*exp(Wt*sigma+nu*t)]
+
+# So if you rewrite all that in terms of St( St=S0*exp(nu*t*sig*Wt) it appears to be whats on page 89.
+#{(D[2](f))(t, St)*S0*sigma*exp(Wt*sigma+nu*t),
+# (D[1](f))(t, St)+(D[2](f))(t, St)*S0*nu*exp(Wt*sigma+nu*t)+(1/2)*(D[2, 2](f))(t, St)*S0^2*sigma^2*exp(2*Wt*sigma+2*nu*t)+(1/2)*(D[2](f))(t, St)*S0*sigma^2*exp(Wt*sigma+nu*t)}
+
+
+#PROBLEM 6
+#____________________________
+
+#Unfortunately, I am at a bit of a loss as to how to prove the given formula, humanly. 
+
+
+#PROBLEM 7
+#____________________________
+
+#Assuming that we have proved the formula, then 
+# Int(f(t,x)*exp(-x^2/(2*t))/sqrt(2*Pi*t),x=-infinity..infinity)
+# will give the expected value of a function f of  our stochastic process x. 
+ExpftWexact:=proc(f,t,Wt) local prod:
+#Because I am worried that typing everything in one line will result in typos..
+assume(t>0) :
+prod:=f:
+prod:=prod * exp(-Wt ^2/ (2*t)):
+prod:=prod / sqrt(2* Pi * t) :
+int( prod, Wt=-infinity..infinity) :
+end:
+
+#lprint(ExpftWexact(exp(a*Wt),t,Wt)); returns
+#exp((1/2)*t*a^2)
+
+#lprint(ExpftWexact(exp(nu*t+sig*Wt),t,Wt)); returns 
+#exp(nu*t+(1/2)*t*sig^2)
+
+#lprint(ExpftWexact(cos(a*Wt),t,Wt));		returns 
+#Pi^(1/2)*t^(1/2)*exp(-(1/2)*a^2*t)/(Pi*t)^(1/2) 
+
+#lprint(ExpftWexact(cos(t+a*Wt),t,Wt));		returns
+#(1/2)*exp(-I*t-(1/2)*a^2*t)*(exp((2*I)*t)+1)
+
+
+
+####CLASS 23 STUFF####
+ra:=proc():
+2*rand(0..1)()-1:
+end:
+
+#Bt(t,N): A sample Brownian path of duration t
+#with N big, dt=1/N, dx=sqrt(dt) (N should a perfect square)
+Bt:=proc(t,N) local dt,dx,i,j,P:
+
+dt:=1/N:
+dx:=sqrt(dt):
+P:=[seq(ra(),i=1..t*N)]:
+P:=[seq(add(P[j],j=1..i),i=1..nops(P))]:
+P:=evalf([seq([i*dt,P[i]*dx],i=1..nops(P))]):
+end:
+
+#Ito(f,t,Wt): Ito's generic SDE for an expression f of t and Wt
+#[dWtComponent, dtComp]
+Ito:=proc(f,t,Wt):
+simplify([diff(f,Wt),diff(f,t)+1/2*diff(f,Wt,Wt)]):
+end:
+
+#expressing the expectation of f(t,Wt) in terms of
+#hopefully simpler things
+ExpRec:=proc(f,t,Wt) local sid:
+option remember:
+
+if diff(f,Wt)=0 then 
+ RETURN(f):
+fi:
+
+if diff(f/Wt,Wt)=0 then
+ RETURN(0):
+fi:
+
+sid:=Ito(f,t,Wt)[2]:
+int(ExpRec(sid, t,Wt),t):
+
+end:
+
+#MakeSDE(f,t,Wt): inputs an expression f in t and Wt
+#and outputs an SDE (Eq. 4.14) outputs the
+#pair [sig(t,Zt),mu(t,Zt)]
+MakeSDE:=proc(f,t,Wt,Zt) local ito,Wt0:
+
+ito:=Ito(f,t,Wt):
+
+Wt0:=solve(f=Zt,Wt):
+
+simplify(subs(Wt=Wt0,ito)):
+
+
+end:
+
+
+#written by Anthony Zaleski
+#Ints(f,s,B,B0,t0,N): inputs an expression f in s and B; B0, a specific discrete 
+#sample Brownian motion (gotten from Bt(t0,N); a time t0; and a parameter N 
+#(a perfect square) and outputs a discrete approximation to the usual integral 
+#of f(s,B_0) with respect to s from 0 to t0.
+
+Ints:=proc(f,s,B,B0,t0,N) local i:
+if t0>B0[-1][1] then return FAIL: fi:
+evalf(add(subs({s=B0[i][1],B=B0[i][2]},f)/N , i=1..N*t0)):
+end:
+
+
+#IntW(f,s,B,B0,t0,N): inputs an expression, f in in s and B; B0, a specific 
+#discrete sample Brownian motion (gotten from Bt(t0,N)); a time t0; and a 
+#parameter N (a perfect square) and outputs a discrete approximation to the 
+#STOCHASTIC integral of f(s,B_0) with respect to dW_s, from 0 to t0.
+
+IntW:=proc(f,s,B,B0,t0,N) local i:
+if t0>B0[-1][1] then return FAIL: fi:
+evalf(add(subs({s=B0[i][1],B=B0[i][2]},f)*(B0[i][2]-B0[i-1][2]) , i=2..N*t0)):
+end:
+#End written by Anthony Zaleski
+
+
+
+### Hw 22 Code ####
+
+
+MyTaylor:=proc(f,x,a,N):
+taylor(f,x=a,N):
+end:
+
+
+Taylor2Start:=proc(f,x,y,h,k,N) local g:
+g:=subs({x=x+h,y=y+h},f):
+#print(g):
+mtaylor(g,{x,y},N):
+end:
+
+ExpWtr:=proc(t,r) local EW,S, EZ:
+if r=0 then return(1) fi:
+if r=1 then return(0) fi:
+EZ:= r*(r-1) * 1/2 *int(ExpWtr(S,r-2),S=0..t):
+end:
+
+Ints:=proc(f,s,B,B0,t0,N) local i,sum,f_0:
+f_0:= subs({B=0,s=0},f):
+sum:= add(
+subs({s=i*dt,B=B0[i][2]},f) * (1/N)
+, i=1..t0*N):
+f_0*(1/N) +sum:
+end:
+
+IntW:=proc(f,s,B,B0,t0,N) local i,sum,f_0:
+f_0:= subs({B=0,s=0},f):
+sum:= add(
+subs({s=i*dt,B=B0[i][2]},f) * (B0[i][2] - B0[i-1][2])
+, i=2..t0*N):
+f_0 * (B0[1][2])  +sum:
+
+end:
