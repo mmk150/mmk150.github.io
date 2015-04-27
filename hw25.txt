@@ -1,0 +1,314 @@
+#Matthew Kownacki
+# April 24, 2015, Assignment hw25.txt
+#Ok to post
+
+print("File loaded"):
+
+#PROBLEM 1
+#_________________________
+# By using Vx(m,p,x) and ID(f,x,k) conjecture asymptotic expressions for the expectation and variance for a Shepp Urn Game with the same number of starting plus and minus balls
+# Do the standardized moments converge? Is the limiting distribution normal?
+
+# We will examine evalf(seq(evalf(ID(Vx(i,i,x),x,8)/sqrt(i)),i=1..750));
+#WARNING: Do not try to run that expression through Maple unless you would like to sit around twiddling your thumbs for quite a while. 
+
+# Well, Expectation of ( V(i,i) /sqrt(n)) converges to like 5.19 ~ 5.21 as shown in class
+# Var( V(i,i)/sqrt(n)) converges to like 3.33 ~ 3.37
+
+# The rest of the moments seem to be tending towards 0, but they do not look normal to me. 
+
+#PROBLEM 2
+#_________________________
+Vg:= proc(m,p,MaxLoss) option remember:
+
+
+if m=0 then
+RETURN(p):
+elif p=0 then
+RETURN(0):
+elif m-p>MaxLoss then 
+#print("Hits this MaxLoss line"):
+RETURN(1):
+else
+ max(0, m/(m+p)*(-1+ Vg(m-1,p,MaxLoss)) + p/(m+p)*(1+ Vg(m,p-1,MaxLoss)) ):
+fi:  
+
+
+end:
+
+#The values of evalf([seq(Vg(i,i,MaxLoss),i=1..120)]); for MaxLoss from 1 to 5 tend to 1 after the first couple terms
+#They match up with seq(V(i,i),i=1..100) for those first few terms. 
+
+#PROBLEM 3
+#_________________________
+Vxg:=proc(m,p,x,MaxLoss)
+ option remember:
+
+
+if m=0 then
+  RETURN(x^p):
+elif p=0 then
+  RETURN(1):
+elif m-p>MaxLoss then 
+RETURN(1):
+elif   V(m,p)=0 then
+  RETURN(1):
+else
+
+expand(m/(m+p)*(Vx(m-1,p,x)/x) + p/(m+p)*( x*Vx(m,p-1,x))):
+ 
+fi:  
+ 
+
+end: 
+
+#PROBLEM 4
+#_________________________
+
+GuessPol1:=proc(L,n,d) local sums, sys, vars, i:
+sums:=a[0]:vars:={a[0]}:
+for i from 1 to d do:
+sums:= sums + a[i]*n^i :
+vars:= vars union {a[i]}:
+od:
+sys:={seq(subs(n=i,sums)=L[i],i=1..nops(L))}:
+vars:=solve(sys,vars):
+if vars = NULL then return(FAIL): fi:
+
+return(subs(vars,sums)):
+
+end:
+
+#PROBLEM 5
+#_________________________
+
+GuessPol:=proc(L,n) local i,up,temp:
+up:=nops(L)-3:
+for i from 0 to up do
+temp:=GuessPol1(L,n,i) :
+if temp= FAIL then
+else return(temp)
+fi:
+od:
+
+return(temp):
+end:
+
+#PROBLEM 6
+#_________________________
+
+BdP:=proc(p,m0) local i, j,k, figs,nums,keepGoing,poly,list:
+
+for i from 1 while Bd(m0,i) =0 do
+	od:
+figs:=i:
+list:=[seq(Bd(m0,j),j=i..2*figs+1)]:
+keepGoing:=true:
+nums:= i-1:
+figs:=2*figs+1:
+while keepGoing do
+poly:= GuessPol(list,p):
+if poly=FAIL then
+else 
+keepGoing:=false:
+return(m0, sort(simplify(normal(subs(p=p-nums,poly))))) :
+
+fi:
+
+figs:= 2* figs + 1:
+list:=[seq(Bd(m0,k),k=i..figs)]:
+od:
+
+
+end:
+
+#NOTE: This gives me NIGHTMARISHLY long expressions even after simplifying
+#for i from 0 to 20 do lprint(evalf(BdP(p,i))); od; returns
+#0., p
+#1., p^2
+#2., .5000000000*p^3+.5000000000*p^2-1.*p
+#3., .1666666667*p^4+.5000000000*p^3-.6666666667*p^2-2.*p+2.
+#4., 0.4166666667e-1*p^5+.2500000000*p^4-0.4166666667e-1*p^3-2.250000000*p^2-1.*p+6.
+#5., 12.+3.*p+0.8333333333e-2*p^6+0.8333333333e-1*p^5+.1250000000*p^4-1.083333333*p^3-3.133333333*p^2
+#6., 34.+10.66666667*p+0.1388888889e-2*p^7+0.2083333333e-1*p^6+0.7638888889e-1*p^5-.2708333333*p^4-2.244444444*p^3-2.250000000*p^2
+#7., 82.+36.50000000*p+0.1984126984e-3*p^8+0.4166666667e-2*p^7+0.2638888889e-1*p^6-0.2083333333e-1*p^5-.8861111111*p^4-2.983333333*p^3+1.359523810*p^2
+#8., 133.+97.90000000*p+0.2480158730e-4*p^9+0.6944444444e-3*p^8+0.6597222222e-2*p^7+0.1111111111e-1*p^6-.2251736111*p^5-1.570138889*p^4-2.681448413*p^3+15.55833333*p^2
+#9., 208.+181.8666667*p+0.9920634921e-4*p^9+0.1306216931e-2*p^8+0.5555555556e-2*p^7-0.3674768519e-1*p^6-.5215277778*p^5-2.093926367*p^4+1.649206349*p^3+53.12936508*p^2+0.2755731922e-5*p^10
+#10., 306.+305.0190476*p+0.2149470899e-3*p^9+0.1512896825e-2*p^8-0.2652943122e-2*p^7-.1230034722*p^6-.8615106922*p^5+0.2755731922e-6*p^11-1.584474206*p^4+15.84490079*p^3+114.7059524*p^2+0.1240079365e-4*p^10
+#11., 4082.+474.7404762*p+0.3058862434e-3*p^9+0.5133928571e-3*p^8-0.2135003307e-1*p^7-.2450121252*p^6-1.048004850*p^5+0.1377865961e-5*p^11+1.878360891*p^4+43.32857143*p^3+210.3661075*p^2+0.3031305115e-4*p^10+0.2505210839e-7*p^12
+#12., -2564.+4351.336508*p+0.2391286376e-3*p^9-0.2636822090e-2*p^8-0.5260028568e-1*p^7-.3706714341*p^6-.5957121730*p^5+0.3743202528e-5*p^11+10.19607529*p^4+89.81156165*p^3+349.6771825*p^2+0.5029210758e-4*p^10+0.2087675699e-8*p^13+0.1377865961e-6*p^12
+#13., 4947.-333.5095238*p+0.1605904384e-9*p^14-0.1773313492e-3*p^9-0.8847254372e-2*p^8-0.9367380401e-1*p^7-.4042152594*p^6+1.135777116*p^5+0.7027116402e-5*p^11+25.95207271*p^4+161.9675908*p^3+2368.960935*p^2+0.5477017196e-4*p^10+0.1252605419e-7*p^13+0.4112721127e-6*p^12
+#14., 3271.+5171.012771*p+0.1043837849e-8*p^14-0.1173074071e-2*p^9-0.1845085382e-1*p^8-.1302728175*p^7-.1892718438*p^6+5.032548267*p^5+0.9362181671e-5*p^11+52.37409046*p^4+876.0861177*p^3+1053.833618*p^2+0.1305527998e-4*p^10+0.4070967613e-7*p^13+0.1147074560e-10*p^15+0.8569908744e-6*p^12
+#15., 4845.+6027.139899*p+0.3666815009e-8*p^14-0.2944763650e-2*p^9-0.3006742511e-1*p^8-.1332249412*p^7+0.7647163732e-12*p^16+.5086076386*p^6+12.26233568*p^5+0.6729622615e-5*p^11+245.5146203*p^4+803.2339282*p^3+3326.506956*p^2-0.1180114857e-3*p^10+0.9290156860e-7*p^13+0.8029521918e-10*p^15+0.1319898166e-5*p^12
+#16., 6700.+8401.495152*p+0.9073359768e-8*p^14-0.5493152778e-2*p^9+0.4779477332e-13*p^17-0.3956730990e-1*p^8-0.5358272307e-1*p^7+0.5735372799e-11*p^16+2.018539253*p^6+54.73679952*p^5-0.7413100300e-5*p^11+326.6456478*p^4+1588.327132*p^3+4871.875766*p^2-0.3871426078e-3*p^10+0.1603850164e-6*p^13+0.3030188629e-9*p^15+0.1361164556e-5*p^12
+#17., 3072991.+11698.50403*p+0.1722552307e-7*p^14-0.8419905909e-2*p^9+0.3823581866e-12*p^17-0.3881762482e-1*p^8+.1828751560*p^7+0.2313267029e-10*p^16+9.852377667*p^6+92.82943433*p^5-0.4180903621e-4*p^11+580.9153426*p^4+2522.492117*p^3+7024.271926*p^2-0.8290505828e-3*p^10+0.2031897287e-6*p^13+0.8067757737e-9*p^15+0.1510060569e-6*p^12+0.2811457254e-14*p^18
+#18., -14948582.+3079988.393*p+0.2516542979e-7*p^14-0.1066980310e-1*p^9+0.1640953884e-11*p^17-0.1421621202e-1*p^8+1.406072207*p^7+0.6586119764e-10*p^16+20.20479314*p^6+166.5093377*p^5-0.1055622200e-3*p^11+957.1476427*p^4+3790.201870*p^3+9979.163218*p^2-0.1433908366e-2*p^10+0.1315629094e-6*p^13+0.1662573053e-8*p^15-0.3578958370e-5*p^12+0.2389738666e-13*p^18+0.1561920697e-15*p^19
+#19., 30799051.-13406959.53*p+0.2454802222e-7*p^14-0.1021312251e-1*p^9+0.8220635247e-17*p^20+0.4970656426e-11*p^17+.1455353899*p^8+3.496373721*p^7+0.1459493061e-9*p^16+38.31817101*p^6+283.6174024*p^5-0.2044747553e-3*p^11+1492.285644*p^4+5532.427253*p^3+1545912.253*p^2-0.2104467968e-2*p^10-0.2099023134e-6*p^13+0.2709915853e-8*p^15-0.1142825107e-4*p^12+0.1087096805e-12*p^18+0.1405728627e-14*p^19
+#20., -26851891.+24353170.89*p-0.1072273084e-8*p^14+0.6396345192e-2*p^9+0.7809603484e-16*p^20+0.1176074741e-10*p^17+.4826206266*p^8+7.216952727*p^7+0.2601867802e-9*p^16+68.04947144*p^6+458.0325503*p^5-0.3351903565e-3*p^11+2243.347077*p^4+518556.3533*p^3-5929169.377*p^2+0.4110317623e-18*p^21-0.2599373052e-2*p^10-0.1045495764e-5*p^13+0.3284272282e-8*p^15-0.2498631828e-4*p^12+0.3488549876e-12*p^18+0.6755307014e-14*p^19
+
+#PROBLEM 7
+#_________________________
+ProveBdP:=proc(p,M0) local list,i, polys,curr,last,newlist:
+# zeroth guy from BdP 
+list:=[p]:
+polys:=[p]:
+for i from 1 to M0 do:
+
+curr:=BdP(p,i)[2]:
+list:= [op(list),curr]:
+last:=polys[nops(polys)] :
+polys:=[op(polys), normal(simplify(newCsym(i,p-1) - newCsym(i-1,p) +subs(p=p-1, curr) + last))]:
+
+#print(normal(simplify(newCsym(i,p-1) - newCsym(i-1,p) + subs(p=p-1,curr ) + last))):
+
+
+od:
+
+newlist:=[]:
+for i from 1 to nops(list) do:
+newlist:=[op(newlist), list[i]-polys[i]]:
+od:
+
+# If newlist is a bunch of zeroes, then they must be equal
+RETURN(list, polys,newlist ): 
+
+end:
+
+#symbolic version of C(m,p), because Maple seems to hate me if I do this part otherwise...
+newCsym:=proc(m,p) local x:
+x:= expand(product(j,j=1..m+p)): 
+x:=expand(x/(product(j,j=1..m))):
+x:=expand(x/(product(j,j=1..p))):
+x:=simplify(normal(x)):
+end:
+
+
+
+
+############Stuff from class 25
+#V(m,p): the expected final gain in a Shepp game
+#with m minus balls and p plus balls, you can quit any
+#time. You quit as soon as your expectation is <=0
+V:=proc(m,p) option remember:
+
+if m=0 then
+  RETURN(p):
+elif p=0 then
+  RETURN(0):
+else
+ max(0, m/(m+p)*(-1+ V(m-1,p)) + p/(m+p)*(1+ V(m,p-1)) ):
+fi:  
+ 
+
+end:
+
+#Vf(m,p): Floating point version of V(m,p)
+#the expected final gain in a Shepp game
+#with m minus balls and p plus balls, you can quit any
+#time. You quit as soon as your expectation is <=0
+Vf:=proc(m,p) option remember:
+
+if m=0 then
+  RETURN(p):
+elif p=0 then
+  RETURN(0):
+else
+ max(0, evalf(m/(m+p)*(-1+ Vf(m-1,p)) + p/(m+p)*(1+ Vf(m,p-1))) ):
+fi:  
+ 
+
+end:
+
+
+
+
+
+C:=proc(m,p) option remember: binomial(m+p,m): end: 
+
+#Bd(m,p):=V(m,p)*C(m,p)
+Bd:=proc(m,p)
+V(m,p)*C(m,p):
+
+end:
+
+#B(m,p): V(m,p)*C(m,p) using the recurrence in Eq. (10)
+#in William M. Boyce's paper, Discrete Math v. 5 (1973),
+#297-312.
+B:=proc(m,p) option remember:
+
+if m=0 then
+  RETURN(p):
+elif p=0 then
+  RETURN(0):
+else
+ max(0,  C(m,p-1)-C(m-1,p)+ B(m-1,p)+B(m,p-1) ):
+fi:  
+ 
+
+end:
+
+beta:=proc(p) local m:
+
+for m from p while V(m,p)>0 do od:
+
+m-1:
+
+end:
+
+#betaSeq(N): the first N terms of beta(p)
+betaSeq:=proc(N) local p:
+
+[seq(beta(p),p=1..N)]:
+
+end:
+
+
+#Vx(m,p,x): the pgf of the player's ultimate
+#results with m minus balls and p plus balls
+#the output is a Laurent polynomial
+#such that the coefficient of
+#x^i is the prob. that at the end you got i dollars
+Vx:=proc(m,p,x) option remember:
+
+if m=0 then
+  RETURN(x^p):
+elif p=0 then
+  RETURN(1):
+elif   V(m,p)=0 then
+  RETURN(1):
+else
+
+expand(m/(m+p)*(Vx(m-1,p,x)/x) + p/(m+p)*( x*Vx(m,p-1,x))):
+ 
+fi:  
+ 
+
+end: 
+
+
+#One function from class 6
+#ID(f,x,k): Given the probabity generating function f
+#in the variable x, for some r.v. under some prob. distibution
+#outputs the list [av,var, std. moms]
+
+ID:=proc(e,x,k) local i,av,M, f:
+
+f:=e/subs(x=1,e):
+
+av:=subs(x=1,diff(f,x)):
+
+M:=[av]:
+
+
+f:=f/x^av:
+
+
+f:=x*diff(f,x):
+for i from 2 to k do
+f:=x*diff(f,x):
+M:=[op(M),subs(x=1,f)]:
+od:
+M:
+ 
+[M[1],M[2],seq(M[i]/M[2]^(i/2),i=3..k)]:
+end:

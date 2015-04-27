@@ -1,0 +1,204 @@
+#Matthew Kownacki
+# April 25, 2015, Assignment hw24.txt
+# Ok to post
+
+print("File loaded"):
+
+
+##PROBLEM 1
+#________________________
+GainLS:=proc(m,p,S)  local m1,p1,ga,t,db:
+m1:=m: p1:=p: 
+ga:=0:
+
+
+while m1+p1>0 do
+
+if p1=0 or m1-p1>=S[p1] then
+    
+    RETURN(ga): 
+  else
+    
+db:=rand(1..p1+m1)():
+
+
+if db<=m1 then
+ 
+  m1:=m1-1:
+  ga:=ga-1:
+else
+  
+
+   p1:=p1-1:
+   ga:=ga+1:
+fi:
+fi:
+od:
+
+
+ga:
+end:
+
+
+
+
+SimGain:=proc(m,p,S,M) local i,sumz:
+sumz:=0:
+for i from 1 to M do
+sumz:=sumz + GainLS(m,p,S): od:
+sumz:=sumz/M: 
+end:
+
+##PROBLEM 2
+#________________________
+Neighbors:=proc(S) local i,dummy,strat,strats:
+strats:={}:
+
+for i from 1 to nops(S) do:
+dummy:=S: 
+dummy[i]:=dummy[i]+1:
+strats:=strats union {dummy} :
+dummy:=S: 
+if dummy[i]-1 >=0 then
+dummy[i]:=dummy[i]-1:
+strats:=strats union {dummy}:
+fi:
+od:
+strats:
+end:
+
+##PROBLEM 3
+#________________________
+BestNeighbor:=proc(m,p,S,M) local s,strats,track,comp,currBest:
+strats:=Neighbors(S):
+#print(strats):
+comp:=SimGain(m,p,S,M):
+currBest:=S:
+
+for s in strats do
+track:=SimGain(m,p,s,M):
+if track > comp then
+currBest:=s:
+comp:=track:
+fi:
+od:
+return(currBest):
+end:
+
+
+##PROBLEM 4
+#________________________
+BestStrat:=proc(m,p,M) local S,i,track,comp:
+S:=[0$p]: track:=BestNeighbor(m,p,S,M):
+ for i while track <>S do
+#print(i):
+S:=track:
+track:=BestNeighbor(m,p,S,M):
+od:
+return(S):
+end:
+
+
+#BestStrat(10,10,1000); returns
+#                 [1, 1, 1, 3, 2, 2, 3, 3, 2, 2]
+
+#BestStrat(14,16,1000); returns (after consuming most of my computer's RAM usage for about fifteen minutes)
+#		[1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3, 2, 1, 0, 0]
+
+
+#Class 24 stuff
+#A strategy for the Shepp Urn game is a list,S, of
+#of length at least p (if you start with m minus balls
+#and p plus balls) such that you quit if
+#m1-p1>=S[p1]. It returns [MoneyGained, NumberOfTurns]
+PlayLS:=proc(m,p,S) local m1,p1,ga,t,db:
+m1:=m: p1:=p: t:=0:
+ga:=0:
+
+
+while m1+p1>0 do
+print(` Right now the urn contains`, m1, `minus balls `):
+print(` and `, p1, `plus balls `):
+ 
+if p1=0 or m1-p1>=S[p1] then
+    print(`Time to quit`):
+    print(`You made`, ga, `dollars, and it took you`, t, `turns.`):
+    RETURN([ga,t]): 
+  else
+    
+db:=rand(1..p1+m1)():
+
+
+if db<=m1 then
+  print(`Poor you, too bad, you drew a minus ball`):
+  t:=t+1:
+  m1:=m1-1:
+  ga:=ga-1:
+else
+  print(`Lucky you, you drew a plus ball`):
+  t:=t+1:
+   p1:=p1-1:
+   ga:=ga+1:
+fi:
+fi:
+od:
+
+print(`You played`, t, `turns and your fortune is`, ga):
+[ga,t]:
+end:
+
+
+ #PlayLSterse(m,p,S): same as above w/o commentary 
+PlayLSterse:=proc(m,p,S) local m1,p1,ga,t,db:
+m1:=m: p1:=p: t:=0:
+ga:=0:
+
+
+while m1+p1>0 do
+
+if p1=0 or m1-p1>=S[p1] then
+    
+    RETURN([ga,t]): 
+  else
+    
+db:=rand(1..p1+m1)():
+
+
+if db<=m1 then
+ 
+  t:=t+1:
+  m1:=m1-1:
+  ga:=ga-1:
+else
+  
+  t:=t+1:
+   p1:=p1-1:
+   ga:=ga+1:
+fi:
+fi:
+od:
+
+
+[ga,t]:
+end:
+
+#SimLS(m,p,S,M,x,y):  simulates the Larry Shepp Urn game
+#starting with m minus balls and p plus balls, following
+#the strategy S (where you quit as soon as
+#number of minus-number of plus is>=S[p]), running M times.
+#It outputs the approximate pgf whose coeff. of x^ga*y^t is
+#the prob. of making ga dollars in t turns
+#it also returns the expected gain and the expected duration
+#Output is [pgf(x,y),AveGain, AveDuration]
+
+SimLS:=proc(m,p,S,M,x,y) local i,P,kh:
+
+P:=0:
+for i from 1 to M do
+ kh:=PlayLSterse(m,p,S):
+ P:=P+x^kh[1]*y^kh[2]:
+od:
+P:=P/M:
+
+[P, subs({x=1,y=1},diff(P,x)),subs({x=1,y=1},diff(P,y))]:
+end:
