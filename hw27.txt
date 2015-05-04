@@ -1,0 +1,150 @@
+#Matthew Kownacki
+# May 2, 2015, Assignment hw27.txt
+# Ok to Post
+with(plots):
+print("FILE LOADED"):
+#PROBLEM 1
+#___________________
+
+OneStepIsing:=proc(M,z) local i,j,newi,newj,newM,ra:
+
+newi:=rand(1..nops(M))():
+newj:=rand(1..nops(M[1]))():
+
+newM:=M:
+newM[newi][newj] := -1*newM[newi][newj] :
+if evalf( Gibbs(newM,z) / Gibbs(M,z) ) >=1 then
+return(newM):
+elif  raR() < Gibbs(newM,z)/Gibbs(M,z) then
+return(newM):
+else
+return(M):
+fi:
+end:
+
+#PROBLEM 2
+#___________________
+
+Ising:=proc(m,n,z,K) local i,j,M,L:
+M:=RandU(m,n):
+for i from 1 to K do:
+M:=OneStepIsing(M,z):
+od:
+M:
+end:
+
+
+#PROBLEM 3
+#___________________
+with(plots):
+DrawMat:=proc(M,h) local i,j,pic,square,plotted:
+# I couldn't figure out how to do it with "pixel resolution" h, so I just did it with h=1
+
+pic:=NULL:
+for i from 1 to nops(M) do
+
+for j from 1 to nops(M[1]) do
+square:=[[h*(j-1), h*(nops(M)-i)], [h*(j-1), h*(nops(M)-(i+1))], [j*h, h*(nops(M)-i-1)], [j*h, h*(nops(M)-1)]]:
+if M[i][j] = -1 then
+plotted:=polygonplot( square,color="white",filled=true):
+else
+plotted:=polygonplot(square,color="black",filled=true):
+fi:
+
+pic:=pic, plotted
+od:
+od:
+display(pic):
+
+end:
+
+
+
+#PROBLEM 4
+
+Prob4:=proc() local i,M,L:
+
+L:=seq(display(DrawMat(Ising(15,15,i*.5,30000),1)),i=1..10):
+display(L,insequence=true):
+# SIDE NOTE: ANIMATING STUFF IS REALLY COOL!
+end:
+
+# My animation started out as a random mess of black and white tiles, shifted to a big clump of black tiles, and then become entirely white overtime. 
+
+
+
+### STUFF FROM c27.txt
+raR:=proc(): evalf(rand(1..10^10)()/10^10): end:
+
+Nick:=proc(L,i0,K) local ra,n,Pa,i,j,roll:
+n:=nops(L):
+ra:=rand(1..n):
+Pa:=[i0]:
+
+i:=i0:
+
+while nops(Pa)<=K do
+ j:=ra():
+  
+  if L[j]/L[i]>=1 then
+    Pa:=[op(Pa),j]:
+    i:=j:
+  else
+
+    roll:=raR():
+
+     if L[j]/L[i]>roll then
+  
+      Pa:=[op(Pa),j]:
+      i:=j:
+     else
+      Pa:=[op(Pa),i]:
+
+     fi:
+  fi:
+od:
+
+Pa:
+
+end:
+
+#CheckNic(L,i0,K1,K2):
+ CheckNick:=proc(L,i0,K1,K2) local x,Pa,i1,Ka:
+
+Pa:=Nick(L,i0,K1+K2):
+
+Ka:=evalf(add(x[Pa[i1]],i1=K1+1..K1+K2)/K2):
+
+
+[seq(coeff(Ka,x[i1],1),i1=1..nops(L))],evalf(L) :
+
+end:
+
+#The "energy" of a (-1,1) matrix M given as a list of lists
+Energy:=proc(M) local i,j,n,m:
+n:=nops(M):
+m:=nops(M[1]):
+
+add(add(M[i][j]*M[i][j+1],j=1..m-1)+ M[i][m]*M[i][1],i=1..n)
+
++add(add(M[i+1][j]*M[i][j],i=1..n-1)+M[n][j]*M[1][j],j=1..m):
+
+
+end:
+
+
+
+#RandU(m,n): a (uniformly) m by n matrix of (1,-1)
+RandU:=proc(m,n) local ra:
+ra:=rand(0..1):
+
+[seq([seq(2*ra()-1,i=1..n)],j=1..m)]:
+
+end:
+
+#The Boltzmann weight of M with parameter z
+#z=exp(1/k/T) (T abs. temperature, and k physical const.)
+Gibbs:=proc(M,z)
+z^Energy(M):
+end:
+

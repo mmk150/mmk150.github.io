@@ -1,0 +1,154 @@
+#Matthew Kownacki
+# April 27, 2015, Assignment hw26.txt
+# Ok to post
+
+
+print("File loaded"):
+
+# Inputs polynomial F in x,y with positive coefficients, estimates area of region (F(x,y))^2 <1 x>=0, y>=0
+#PROBLEM 1
+#____________________________
+EstimateArea:=proc(F,x,y,N) local i,nums, ra,a,b,dec:
+# If I am thinking about this correctly (perhaps I am not, or am misinterpreting what is asked)
+# Then everything will be inside the rectangle that contains the first quadrant of the unit circle.
+
+ra:=rand(0..1000000)/1000000:
+dec:=10^(round(evalf(log10(N)))): 
+nums:=0:
+for i from 1 to N do
+a:= ra():
+
+b:=ra():
+if subs({x=a,y=b},F^2) <=1 then
+nums:=nums+1:
+fi:
+od:
+RETURN(nums/dec):
+end:
+
+#evalf(EstimateArea(x^2+y^2,x,y,10000)); returns
+#                         0.7540000000
+
+#evalf(EstimateArea(x^3+2*x*y+y^3,x,y,10000)); returns
+#		0.5800310000
+
+#PROBLEM 2
+#____________________________
+
+EstimateAreaMarkov:=proc(F,x,y,N,delta) local a,b,nums,ra,newa,newb,i,dec:
+ra:=rand(0..1000000)/1000000:
+dec:=10^(round(evalf(log10(N)))): 
+nums:=0:
+#Lets start like halfway in the middle?
+a:=.5:
+b:=.5:
+for i from 1 to N do
+newa:= a+ (2*ra() -1)*delta :
+
+newb:=b+ (2*ra()-1)*delta:
+#print(b):
+if  newa>=0 and newb>=0 and subs({x=newa,y=newb},F^2) <=1 then
+a:=newa:
+b:=newb:
+nums:=nums+1:
+fi:
+od:
+RETURN(nums/dec):
+end:
+
+
+
+
+# evalf(EstimateAreaMarkov(x^2+y^2,x,y,10000,.2)); returns 
+# 0.7775000000
+
+#EstimateAreaMarkov(x^3+2*x*y+y^3,x,y,10000,.3); returns
+#0.6152000000
+
+
+
+
+### Class 26 Stuff
+#LD(P): outputs i with prob. P[i]
+ LD:=proc(P) local m,i,P1, r:
+ m:=ilcm(seq(denom(P[i]),i=1..nops(P))):
+ P1:=m*P:
+ r:=rand(1..convert(P1,`+`))():
+
+ for i from 1 to nops(P1) while 
+  convert([op(1..i,P1)],`+`)<r do od:
+  
+i:
+
+
+end:
+
+#RandMCp(n,N): generates a random Markov Chain with
+#n sites (a.k.a. states) with prob. with denom. M
+ RandMC:=proc(n,M) local ra, i,j,A,su:
+ra:=rand(0..M):
+A:=[ seq( [ seq( ra(), i=1..n)], j=1..n)]:
+su:=[seq(convert(A[i],`+`),i=1..n)]:
+
+if member(0,su) then
+ RETURN(RandMC(n,N)):
+fi:
+
+A:=[seq([seq(A[i][j]/su[i],j=1..n)],i=1..n)]:
+end:
+
+#SimMC(L,Ini): inputs a list of lists of probabilites
+#such that after normalization, L[i][j] is the prob.
+#of moving, in one time-step from vertex i to vertex j
+#Ini is the initial probab. (usually [0*,1,0*])
+#running K steps
+SimMC:=proc(L,Ini,K) local p,V,i,cu:
+
+p:=LD(Ini):
+
+V:=[p]:
+
+cu:=p:
+
+for i from 2 to K do
+cu:=LD(L[cu]):
+V:=[op(V),cu]:
+od:
+ 
+V:
+end:
+
+#ST(L): inputs a list of lists such that L[i][j]
+#is the prob. of going to j tomorrow if you at i
+#today, outputs the prob. of being at i at "infinity"
+ST:=proc(L) local eq,var,P,i,j:
+var:={seq(P[i],i=1..nops(L))}:
+
+eq:={seq(P[i]=add(L[j][i]*P[j],j=1..nops(L)),
+       i=1..nops(L))}:
+eq:=eq union {add(P[i],i=1..nops(L))=1}:
+
+var:=solve(eq,var):
+
+
+[seq(subs(var, P[i]),i=1..nops(L))]:
+end:
+
+#TestST(L,Ini,K1,K2): inputs a transition matrix
+#L (a list of lists such that L[i][j] is the
+#prob. of i->j, Ini, the initial distribution
+#warm-up of K1 steps, and records the location of
+#the next K2 steps
+
+TestST:=proc(L,Ini,K1,K2) local Exa,Path,x,App:
+Exa:=evalf(ST(L)):
+
+Path:=SimMC(L,Ini,K1+K2):
+
+App:=evalf(add(x[Path[i]],i=K1+1..K1+K2)/K2):
+
+App:=[seq(coeff(App,x[i],1),i=1..nops(L))]:
+
+Exa,App:
+
+end:
