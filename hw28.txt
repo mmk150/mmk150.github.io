@@ -1,0 +1,345 @@
+#Matthew Kownacki
+#May 4, 2015, Assignment hw28.txt
+# OK to post
+print("FILE LOADED"):
+
+
+#PROBLEM 2
+#___________________________
+Renormalize:=proc(M) local ro,col,i,j,p,mat,sumz:
+ro:= nops(M):
+col:=nops(M[1]):
+if ro<> col then RETURN(FAIL): fi:
+p:= ro mod 3:
+#print(p):
+if p <> 0  then
+RETURN(FAIL):
+fi:
+
+p:=log[3](ro):
+if type(p,integer) then else RETURN(FAIL): fi:
+
+ro:=ro/3:
+
+mat:=[seq([seq(0,i=1..ro)],j=1..ro)]:
+
+#print("GOOD TIL THE LOOPS"):
+sumz:=0:
+
+for i from 1 to ro do:
+for j from 1 to ro do:
+
+sumz:= add(add(M[3*i - m][ 3 * j - n],n=0..2),m=0..2):
+mat[i][j] := sign(sumz):
+
+od:
+od:
+RETURN(mat):
+end:
+
+#PROBLEM 3
+#___________________________
+Prob3:=proc(z) local i,j,k,M,mat,picseq,notover:
+M:=Ising(81,81,z,5000):
+picseq:=NULL:
+notover:=true:
+
+while notover do
+picseq:=picseq,display(DrawMat(M,1)):
+if nops(M) =1 then notover=false:  break: fi:
+M:= Renormalize(M):
+od:
+display(picseq,insequence=true):
+end:
+
+#PROBLEM 4
+#___________________________
+Prob4:=proc(DI,K1) local M, magicSquares:
+M:=MagS(DI,K1);
+nops(M):
+end:
+
+
+#Prob4({op(1..400,E3)}, 3) returns 14609
+#Prob4({op(1..852,E3)},3); returns 607904 after an hour
+# Since nops(E3) = 852, this is appears to be the answer we are looking for. 
+
+
+#PROBLEM 5
+#___________________________
+# Same as MagS but uses SMagS1 instead of MagS1
+SMagS:=proc(DI,K1) local I1, S1,MAT:
+S1:={seq([DI[I1]] , I1=1..nops(DI))}:
+
+for I1 from 1 to K1-1 do
+
+S1:={seq(op(MagS1(DI,MAT)),MAT in S1)}:
+od:
+
+S1:
+
+end:
+
+# Same as MagS1 but with an additional loop to check for the symmetric condition. 
+SMagS1:=proc(DI,MAT) local S1,I1,W,MAT1,Hope,I2,J2,NU1,J1,sym:
+NU1:=nops(MAT):
+S1:={}:
+Hope:=BEG(DI,nops(MAT)+1):
+for I1 from 1 to nops(DI) do
+ W:=DI[I1]:
+sym:=true:
+for J1 from 1 to NU1 do
+if W[J1] = MAT[J1][NU1 + 1] then else sym:=false: break: fi: 
+od:
+ 
+ if nops(W)=nops(MAT[1]) and sym then
+ MAT1:=[op(MAT),W]:
+
+  if {seq([seq(MAT1[I2][J2],I2=1..nops(MAT1))],J2=1..nops(MAT1[1]))}
+      subset Hope then
+    S1:=S1 union {MAT1}:
+  fi:
+ fi:
+od:
+ 
+S1:
+
+
+end:
+
+######################STUFF FROM HW 27 TEXT 
+
+OneStepIsing:=proc(M,z) local i,j,newi,newj,newM,ra:
+
+newi:=rand(1..nops(M))():
+newj:=rand(1..nops(M[1]))():
+
+newM:=M:
+newM[newi][newj] := -1*newM[newi][newj] :
+if evalf( Gibbs(newM,z) / Gibbs(M,z) ) >=1 then
+return(newM):
+elif  raR() < Gibbs(newM,z)/Gibbs(M,z) then
+return(newM):
+else
+return(M):
+fi:
+end:
+
+######
+
+Ising:=proc(m,n,z,K) local i,j,M,L:
+M:=RandU(m,n):
+for i from 1 to K do:
+M:=OneStepIsing(M,z):
+od:
+M:
+end:
+
+
+
+with(plots):
+DrawMat:=proc(M,h) local i,j,pic,square,plotted:
+# I couldn't figure out how to do it with "pixel resolution" h, so I just did it with h=1
+
+pic:=NULL:
+for i from 1 to nops(M) do
+
+for j from 1 to nops(M[1]) do
+square:=[[h*(j-1), h*(nops(M)-i)], [h*(j-1), h*(nops(M)-(i+1))], [j*h, h*(nops(M)-i-1)], [j*h, h*(nops(M)-1)]]:
+if M[i][j] = -1 then
+plotted:=polygonplot( square,color="white",filled=true):
+else
+plotted:=polygonplot(square,color="black",filled=true):
+fi:
+
+pic:=pic, plotted
+od:
+od:
+display(pic):
+
+end:
+
+########### C28.txt
+ALP:=[a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z]:
+
+
+#Freq(DI,AL,K1): inputs a "dictionary" DI in an alphabet
+#AL, and a positive integer K1, and outputs a list of
+#size nops(AL) whose i-th entry is the probability
+#of letter AL[I1] showing up in the K1-th place
+Freq:=proc(DI, AL,K1) local DI1, TAB,I1, W:
+
+DI1:=subs({ seq( AL[I1]=I1, I1=1..nops(AL))},DI):
+
+for I1 from 1 to nops(AL) do
+ TAB[I1]:=0:
+od:
+
+for I1 from 1 to nops(DI1) do
+W:=DI1[I1]:
+TAB[W[K1]]:=TAB[W[K1]]+1:
+od:
+
+[seq(TAB[I1],I1=1..nops(AL))]/nops(DI1):
+
+end:
+
+#TM(DI,AL): inputs a vocabulary list, DI, and an alphabet AL
+#outputs the list of lists such that L[i][j] is
+#the prob. that if AL[i] is in the first place
+#then AL[j] is the second place
+TM:=proc(DI,AL) local DI1, I1,J1,TAB,W,FR:
+
+DI1:=subs({ seq( AL[I1]=I1, I1=1..nops(AL))},DI):
+for I1 from 1 to nops(AL) do
+ for J1 from 1 to nops(AL) do
+    TAB[I1,J1]:=0:
+ od:
+od:
+
+for I1 from 1 to nops(DI1) do
+ W:=DI1[I1]:
+TAB[W[1],W[2]]:=TAB[W[1],W[2]]+1:
+od:
+
+
+FR:=Freq(DI, AL,1):
+
+[seq([ seq( TAB[I1,J1]/(nops(DI1)*FR[I1]),J1=1..nops(AL))],
+I1=1..nops(AL))]:
+
+
+end:
+
+#BEG(DI,K1): inputs a list DI of words and outputs
+#the set of their K1-prefixes
+BEG:=proc(DI,K1) local I1,S1,W:
+option remember:
+S1:={}:
+
+for I1 from 1 to nops(DI) do
+ W:=DI[I1]:
+ if nops(W)>=K1 then
+   S1:=S1 union {[op(1..K1,W)]}:
+ fi:
+od:
+S1:
+end:
+
+#MagS1(DI,MAT): inputs a vocabulary list DI, 
+#and an already constructed matrix, MAT such
+#that all the columns are STARTS of words in the voc.
+#and finds all extensions with one more row such
+#each column are members of also starts of words in DI
+MagS1:=proc(DI,MAT) local S1,I1,W,MAT1,Hope,I2,J2:
+
+S1:={}:
+Hope:=BEG(DI,nops(MAT)+1):
+for I1 from 1 to nops(DI) do
+ W:=DI[I1]:
+
+ if nops(W)=nops(MAT[1]) then
+ MAT1:=[op(MAT),W]:
+
+  if {seq([seq(MAT1[I2][J2],I2=1..nops(MAT1))],J2=1..nops(MAT1[1]))}
+      subset Hope then
+    S1:=S1 union {MAT1}:
+  fi:
+ fi:
+od:
+ 
+S1:
+
+
+end:
+
+#MagS(DI,K1): inputs a vocabulary list DI, an alphabet
+#AL, and pos. intgers K1 and K2 and outputs all
+#the K1 by K2 matrices such that each row and
+#each column are starters of members of DI
+MagS:=proc(DI,K1) local I1, S1,MAT,in12:
+S1:={seq([DI[I1]] , I1=1..nops(DI))}:
+in12:=K1-1:
+for I1 from 1 to in12 do
+
+S1:={seq(op(MagS1(DI,MAT)),MAT in S1)}:
+od:
+
+S1:
+
+end:
+
+#STUFF FROM c27.txt
+raR:=proc(): evalf(rand(1..10^10)()/10^10): end:
+
+Nick:=proc(L,i0,K) local ra,n,Pa,i,j,roll:
+n:=nops(L):
+ra:=rand(1..n):
+Pa:=[i0]:
+
+i:=i0:
+
+while nops(Pa)<=K do
+ j:=ra():
+  
+  if L[j]/L[i]>=1 then
+    Pa:=[op(Pa),j]:
+    i:=j:
+  else
+
+    roll:=raR():
+
+     if L[j]/L[i]>roll then
+  
+      Pa:=[op(Pa),j]:
+      i:=j:
+     else
+      Pa:=[op(Pa),i]:
+
+     fi:
+  fi:
+od:
+
+Pa:
+
+end:
+
+#CheckNic(L,i0,K1,K2):
+ CheckNick:=proc(L,i0,K1,K2) local x,Pa,i1,Ka:
+
+Pa:=Nick(L,i0,K1+K2):
+
+Ka:=evalf(add(x[Pa[i1]],i1=K1+1..K1+K2)/K2):
+
+
+[seq(coeff(Ka,x[i1],1),i1=1..nops(L))],evalf(L) :
+
+end:
+
+#The "energy" of a (-1,1) matrix M given as a list of lists
+Energy:=proc(M) local i,j,n,m:
+n:=nops(M):
+m:=nops(M[1]):
+
+add(add(M[i][j]*M[i][j+1],j=1..m-1)+ M[i][m]*M[i][1],i=1..n)
+
++add(add(M[i+1][j]*M[i][j],i=1..n-1)+M[n][j]*M[1][j],j=1..m):
+
+
+end:
+
+
+
+#RandU(m,n): a (uniformly) m by n matrix of (1,-1)
+RandU:=proc(m,n) local ra:
+ra:=rand(0..1):
+
+[seq([seq(2*ra()-1,i=1..n)],j=1..m)]:
+
+end:
+
+#The Boltzmann weight of M with parameter z
+#z=exp(1/k/T) (T abs. temperature, and k physical const.)
+Gibbs:=proc(M,z)
+z^Energy(M):
+end:
